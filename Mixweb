@@ -1,0 +1,3660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MixCertificate Editor</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#f6f7f9;
+      --surface:#ffffff;
+      --surface-2:#f7f8fa;
+      --surface-3:#eff2f6;
+      --line:#dfe4eb;
+      --line-strong:#cfd6df;
+      --text:#111827;
+      --text-2:#344054;
+      --text-3:#475467;
+      --text-4:#667085;
+      --brand:#635bff;
+      --brand-soft:#eef0ff;
+      --success:#16a34a;
+      --shadow-sm:0 8px 24px rgba(16,24,40,.06);
+      --shadow-md:0 12px 28px rgba(16,24,40,.08);
+      --radius-sm:8px;
+      --radius-md:12px;
+      --radius-lg:16px;
+      --radius-xl:20px;
+      --space-1:8px;
+      --space-2:16px;
+      --space-3:24px;
+      --space-4:32px;
+      --space-5:40px;
+      --font-xs:12px;
+      --font-sm:13px;
+      --font-md:14px;
+      --font-lg:16px;
+      --font-xl:20px;
+      --icon-sm:16px;
+      --icon-md:20px;
+      --focus-ring:0 0 0 3px rgba(99,91,255,.16);
+      --transition-fast:.16s ease;
+      --transition-medium:.22s ease;
+      --sidebar-width:240px;
+      --sidebar-collapsed:64px;
+      --inspector-width:280px;
+    }
+    html,body{height:100%}
+    body{
+      font-family:Inter,"Segoe UI",system-ui,-apple-system,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      overflow:hidden;
+      line-height:1.5;
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
+    }
+    button,input,select,textarea{font:inherit}
+    button,input,select,textarea{transition:border-color .16s ease,background-color .16s ease,box-shadow .16s ease}
+    button{border:none;background:none;cursor:pointer}
+    button:disabled{cursor:not-allowed}
+    :focus-visible{
+      outline:none;
+      box-shadow:var(--focus-ring);
+    }
+    input:focus,select:focus,textarea:focus{
+      outline:none;
+      border-color:rgba(99,91,255,.38);
+      box-shadow:0 0 0 3px rgba(99,91,255,.10);
+    }
+    .app{
+      height:100vh;
+      display:grid;
+      grid-template-rows:48px 1fr 40px;
+      background:var(--bg);
+    }
+    .topbar{
+      display:grid;
+      grid-template-columns:auto 1fr auto;
+      align-items:center;
+      gap:16px;
+      padding:0 12px 0 16px;
+      border-bottom:1px solid rgba(15,23,42,.06);
+      background:var(--surface);
+      position:relative;
+      z-index:40;
+    }
+    .topbar-left,.topbar-center,.topbar-right{display:flex;align-items:center;gap:8px;min-width:0}
+    .topbar-center{justify-content:center}
+    .topbar-right{justify-content:flex-end}
+    .logo-lockup{display:flex;align-items:center;gap:10px;min-width:0}
+    .icon-btn{
+      width:32px;
+      height:32px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:var(--surface);
+      color:var(--text-3);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .icon-btn:hover{background:var(--surface-2);color:var(--text)}
+    .icon-btn svg{width:var(--icon-sm);height:var(--icon-sm);stroke:currentColor;fill:none}
+    .brand-mark{
+      width:28px;
+      height:28px;
+      border-radius:9px;
+      background:var(--brand);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+    .brand-mark svg{width:14px;height:14px;fill:currentColor}
+    .doc-name{
+      min-width:140px;
+      max-width:320px;
+      height:32px;
+      padding:0 10px;
+      border:1px solid transparent;
+      border-radius:8px;
+      display:flex;
+      align-items:center;
+      font-size:14px;
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .doc-name:hover,.doc-name:focus{border-color:var(--line);background:var(--surface-2)}
+    .top-group{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      padding:0;
+      height:36px;
+      border:none;
+      border-radius:0;
+      background:transparent;
+    }
+    .zoom-readout{
+      min-width:52px;
+      text-align:center;
+      font-size:12px;
+      font-weight:700;
+      color:var(--text-2);
+    }
+    .action-btn{
+      height:32px;
+      padding:0 12px;
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:10px;
+      background:var(--surface);
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:var(--font-sm);
+      font-weight:600;
+    }
+    .action-btn svg{width:var(--icon-sm);height:var(--icon-sm);stroke:currentColor;fill:none}
+    .action-btn:hover{background:var(--surface-2);border-color:var(--line-strong)}
+    .profile{
+      width:32px;
+      height:32px;
+      border-radius:50%;
+      background:#ecefff;
+      color:var(--brand);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      font-weight:700;
+      border:1px solid #dfe2ff;
+    }
+    .workspace{
+      display:flex;
+      height:100%;
+      position:relative;
+      overflow:hidden;
+    }
+    .sidebar{
+      display:flex;
+      flex-direction:row;
+      align-items:stretch;
+      height:100%;
+      z-index:50;
+      flex-shrink:0;
+    }
+    .sidebar-head{
+      width:var(--sidebar-width);
+      height:56px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:0 12px;
+      border-bottom:1px solid rgba(15,23,42,.05);
+    }
+    .sidebar-title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+    .sidebar-title strong{font-size:14px}
+    .sidebar-title span{font-size:12px;color:var(--text-3);display:block}
+    .app.sidebar-collapsed .sidebar-title-copy{display:none}
+    .sidebar-body{
+      width:var(--sidebar-width);
+      flex:1;
+      min-height:0;
+      overflow-x:hidden;
+      overflow-y:auto;
+      padding:16px 16px 24px;
+      display:flex;
+      flex-direction:column;
+      gap:24px;
+      align-items:stretch;
+      overscroll-behavior:contain;
+    }
+    .sidebar-body::-webkit-scrollbar,.inspector-body::-webkit-scrollbar{width:8px}
+    .sidebar-body::-webkit-scrollbar-thumb,.inspector-body::-webkit-scrollbar-thumb{background:#d6dbe4;border-radius:999px}
+    .sidebar-sticky{
+      position:sticky;
+      top:0;
+      z-index:6;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      padding-bottom:12px;
+      background:linear-gradient(180deg,#fafbfc 0%,#fafbfc 78%,rgba(250,251,252,0) 100%);
+    }
+    .accordion{
+      position:relative;
+      border:1px solid rgba(15,23,42,.06);
+      border-radius:16px;
+      background:rgba(255,255,255,.84);
+      overflow:hidden;
+      isolation:isolate;
+    }
+    .accordion-head{
+      width:100%;
+      min-height:52px;
+      padding:12px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      color:var(--text);
+      text-align:left;
+    }
+    .accordion-icon{
+      width:28px;
+      height:28px;
+      border-radius:10px;
+      background:var(--surface-3);
+      color:var(--text-2);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+    .accordion-icon svg{width:15px;height:15px;stroke:currentColor;fill:none}
+    .accordion-copy{flex:1;min-width:0}
+    .accordion-copy strong{display:block;font-size:13px}
+    .accordion-copy span{display:block;margin-top:2px;font-size:12px;color:var(--text-3);line-height:1.4}
+    .accordion-caret{
+      width:16px;
+      height:16px;
+      color:var(--text-4);
+      flex-shrink:0;
+    }
+    .accordion-caret svg{width:16px;height:16px;stroke:currentColor;fill:none}
+    .accordion-body{
+      display:grid;
+      grid-template-columns:minmax(0,1fr);
+      gap:16px;
+      max-height:0;
+      overflow:hidden;
+      padding:0 12px;
+      background:transparent;
+      opacity:0;
+      transition:max-height .24s ease, opacity .18s ease, padding .18s ease;
+    }
+    .accordion.open .accordion-body{
+      padding:0 12px 16px;
+      opacity:1;
+    }
+    .app.sidebar-collapsed .accordion{
+      border:none;
+      border-radius:12px;
+      background:transparent;
+    }
+    .app.sidebar-collapsed .accordion-head{
+      justify-content:center;
+      padding:10px 6px;
+    }
+    .app.sidebar-collapsed .accordion-copy,
+    .app.sidebar-collapsed .accordion-caret,
+    .app.sidebar-collapsed .accordion-body{display:none}
+    .app.sidebar-collapsed .search input{display:none}
+    .app.sidebar-collapsed .search{padding:0; justify-content:center; border-color:transparent; background:transparent;}
+    .search{
+      height:40px;
+      display:flex;
+      align-items:center;
+      gap:var(--space-1);
+      border:1px solid var(--line);
+      border-radius:var(--radius-md);
+      padding:0 12px;
+      background:var(--surface-2);
+      margin-top:0;
+    }
+    .search svg{width:var(--icon-sm);height:var(--icon-sm);stroke:var(--text-4);fill:none}
+    .search input{
+      flex:1;
+      border:none;
+      background:none;
+      color:var(--text);
+      font-size:var(--font-sm);
+    }
+    .workspace-search{margin-bottom:0}
+    .toolbar-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:0;
+    }
+    .panel-tabs{
+      display:flex;
+      gap:8px;
+      margin-top:0;
+      overflow:auto;
+      scrollbar-width:none;
+      min-width:0;
+    }
+    .panel-tabs::-webkit-scrollbar{display:none}
+    .panel-tab{
+      min-height:40px;
+      padding:0 12px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:var(--surface);
+      color:var(--text-2);
+      font-size:var(--font-xs);
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .panel-tab:hover{border-color:var(--line-strong);background:var(--surface-2)}
+    .panel-tab.active{
+      background:var(--brand-soft);
+      border-color:#d9dbff;
+      color:var(--brand);
+    }
+    .panel-pane{display:none;min-width:0}
+    .panel-pane.active{
+      display:grid;
+      grid-template-columns:minmax(0,1fr);
+      gap:16px;
+      min-width:0;
+    }
+    .accordion-body > *,
+    .panel-pane > *{min-width:0}
+    .chip{
+      min-height:40px;
+      padding:0 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:var(--surface);
+      color:var(--text-2);
+      font-size:var(--font-xs);
+      font-weight:600;
+    }
+    .chip:hover{border-color:var(--line-strong);background:var(--surface-2);color:var(--text)}
+    .chip.active{
+      background:var(--brand-soft);
+      border-color:#d9dbff;
+      color:var(--brand);
+    }
+    .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:0}
+    .feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:0}
+    .template-card,.asset-card,.quick-card{
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:var(--surface);
+      overflow:hidden;
+      transition:transform var(--transition-fast),border-color var(--transition-fast),background-color var(--transition-fast),box-shadow var(--transition-fast);
+    }
+    .template-card,.asset-card{cursor:pointer}
+    .template-card:hover,.asset-card:hover,.quick-card:hover{border-color:var(--line-strong);transform:translateY(-1px)}
+    .template-card.selected,.asset-card.selected{border-color:var(--brand);box-shadow:0 0 0 1px rgba(99,91,255,.10)}
+    .template-preview,.asset-preview{
+      aspect-ratio:1.45/1;
+      position:relative;
+    }
+    .template-info,.asset-info{padding:10px}
+    .template-info strong,.asset-info strong{display:block;font-size:13px}
+    .template-info span,.asset-info span{display:block;margin-top:4px;font-size:12px;color:var(--text-3)}
+    .tool-card{
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:var(--surface);
+      overflow:hidden;
+      text-align:left;
+      transition:transform var(--transition-fast),border-color var(--transition-fast),background-color var(--transition-fast);
+    }
+    .tool-card:hover{border-color:var(--line-strong);transform:translateY(-1px)}
+    .tool-thumb{
+      height:84px;
+      border-bottom:1px solid rgba(15,23,42,.05);
+      background:var(--surface-2);
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--text-2);
+    }
+    .tool-thumb svg{width:34px;height:34px;stroke:currentColor;fill:none}
+    .tool-meta{padding:10px}
+    .tool-meta strong{display:block;font-size:var(--font-sm)}
+    .tool-meta span{display:block;margin-top:4px;font-size:var(--font-xs);color:var(--text-3)}
+    .stack-list{display:flex;flex-direction:column;gap:12px;margin-top:0;min-width:0}
+    .list-row{
+      min-height:42px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:var(--surface);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .list-row strong{font-size:var(--font-sm)}
+    .list-row span{font-size:var(--font-xs);color:var(--text-3)}
+    .secondary-meta{font-size:11px;color:var(--text-4);font-weight:700;white-space:nowrap}
+    .variable-chips,.drag-pills,.brand-swatch-row,.font-preset-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:0;
+    }
+    .variable-chip,.drag-pill,.font-preset{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      min-height:40px;
+      padding:0 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:var(--surface);
+      font-size:var(--font-xs);
+      font-weight:700;
+      color:var(--text-2);
+    }
+    .variable-chip:hover,.drag-pill:hover,.font-preset:hover{border-color:var(--line-strong);background:var(--surface-2)}
+    .drag-pill{cursor:grab}
+    .mini-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:18px;
+      height:18px;
+      padding:0 6px;
+      border-radius:999px;
+      background:var(--surface-3);
+      color:var(--text-3);
+      font-size:10px;
+      font-weight:700;
+    }
+    .qr-preview{
+      margin-top:0;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:var(--surface);
+      padding:14px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+    .qr-preview .qr-box{width:88px;height:88px;margin:0}
+    .signature-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+      margin-top:0;
+    }
+    .signature-card{
+      min-height:84px;
+      padding:12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:var(--surface);
+      text-align:left;
+    }
+    .signature-card strong{display:block;font-size:var(--font-sm)}
+    .signature-card span{display:block;margin-top:8px;font-size:var(--font-xs);color:var(--text-3)}
+    .draw-pad{
+      height:96px;
+      margin-top:0;
+      border:1px dashed var(--line-strong);
+      border-radius:12px;
+      background:linear-gradient(180deg,#ffffff,#fafbfc);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--text-4);
+      font-size:var(--font-xs);
+    }
+    .style-stack{display:flex;flex-direction:column;gap:12px;margin-top:0}
+    .style-row{
+      min-height:44px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:var(--surface);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .style-row strong{display:block;font-size:var(--font-sm)}
+    .style-row span{display:block;font-size:var(--font-xs);color:var(--text-3)}
+    .brand-logo-row{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+      margin-top:0;
+    }
+    .logo-tile{
+      min-height:72px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:var(--surface);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--text-2);
+      font-size:var(--font-xs);
+      font-weight:700;
+    }
+    .brand-swatch{
+      width:24px;
+      height:24px;
+      border-radius:8px;
+      border:1px solid rgba(15,23,42,.08);
+    }
+    .text-preview{
+      min-height:76px;
+      padding:12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:var(--surface);
+      text-align:left;
+    }
+    .text-preview .preview-title{font-size:18px;font-weight:800;line-height:1.2;color:#4c3420}
+    .text-preview .preview-body{margin-top:6px;font-size:12px;color:var(--text-3)}
+    .ai-mode-switch{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin-top:0;
+    }
+    .ai-step-list{
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      margin-top:0;
+    }
+    .ai-step{
+      padding:12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:var(--surface);
+    }
+    .ai-step strong{display:block;font-size:var(--font-sm)}
+    .ai-step span{display:block;margin-top:4px;font-size:var(--font-xs);color:var(--text-3)}
+    .mini-cert{
+      position:absolute;
+      inset:10px;
+      border-radius:10px;
+      background:rgba(255,255,255,.78);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      color:#4c3420;
+      text-align:center;
+    }
+    .mini-cert .l1{font-size:8px;font-weight:800;letter-spacing:.08em}
+    .mini-cert .l2{font-size:11px;font-weight:800}
+    .mini-cert .l3{font-size:8px}
+    .quick-card{
+      padding:14px;
+      min-height:110px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      background:var(--surface-2);
+    }
+    .quick-card strong{font-size:var(--font-sm)}
+    .quick-card p{font-size:var(--font-xs);line-height:1.5;color:var(--text-3)}
+    .quick-icon{
+      width:32px;
+      height:32px;
+      border-radius:10px;
+      background:var(--surface-3);
+      color:var(--text-2);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .quick-icon svg{width:var(--icon-sm);height:var(--icon-sm);stroke:currentColor;fill:none}
+    .field{margin-top:12px}
+    .accordion-body > .field,
+    .panel-pane > .field,
+    .accordion-body > .subsection-label,
+    .panel-pane > .subsection-label{margin-top:0}
+    .field label{
+      display:block;
+      margin-bottom:8px;
+      font-size:13px;
+      font-weight:700;
+      color:var(--text-2);
+    }
+    .input,.select,.textarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:var(--surface);
+      color:var(--text);
+    }
+    .input,.select{height:40px;padding:0 12px;font-size:var(--font-sm)}
+    .textarea{min-height:96px;padding:12px;font-size:var(--font-sm);line-height:1.5;resize:vertical}
+    .theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+    .accordion-body > .theme-grid,
+    .panel-pane > .theme-grid{margin-top:0}
+    .theme-btn{
+      height:36px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:var(--surface);
+      color:var(--text-2);
+      font-size:var(--font-xs);
+      font-weight:700;
+    }
+    .theme-btn:hover{border-color:var(--line-strong);background:var(--surface-2)}
+    .theme-btn.on{
+      background:var(--brand-soft);
+      border-color:#d9dbff;
+      color:var(--brand);
+    }
+    .upload-box{
+      margin-top:0;
+      border:1px dashed var(--line-strong);
+      border-radius:12px;
+      padding:16px;
+      background:var(--surface-2);
+      text-align:center;
+    }
+    .upload-box p{margin-top:8px;font-size:12px;line-height:1.5;color:var(--text-3)}
+    .upload-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
+    .secondary-btn,.primary-btn,.utility-btn{
+      min-height:40px;
+      padding:0 12px;
+      border-radius:10px;
+      font-size:var(--font-xs);
+      font-weight:700;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      transition:background-color var(--transition-fast),border-color var(--transition-fast),box-shadow var(--transition-fast),transform var(--transition-fast),color var(--transition-fast);
+    }
+    .secondary-btn{
+      border:1px solid var(--line);
+      background:var(--surface);
+      color:var(--text-2);
+    }
+    .secondary-btn:hover,.utility-btn:hover{background:var(--surface-2);border-color:var(--line-strong);color:var(--text)}
+    .primary-btn{
+      border:1px solid var(--brand);
+      background:var(--brand);
+      color:#fff;
+    }
+    .primary-btn:hover{filter:brightness(.97)}
+    .token-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:0}
+    .token{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:var(--surface);
+      font-size:12px;
+      color:var(--text-2);
+      font-weight:600;
+    }
+    .token-dot{
+      width:12px;
+      height:12px;
+      border-radius:50%;
+      border:1px solid rgba(17,24,39,.08);
+    }
+    .subsection-label{
+      margin-top:0;
+      padding-top:4px;
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      color:var(--text-4);
+    }
+    .utility-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:0;
+    }
+    .utility-btn{
+      padding:0 10px;
+      border:1px solid var(--line);
+      border-radius:8px;
+      background:var(--surface);
+      color:var(--text-2);
+      font-size:12px;
+      font-weight:600;
+    }
+    .layer-list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-top:0;
+    }
+    .layer-item{
+      width:100%;
+      min-height:40px;
+      padding:0 10px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:var(--surface);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      color:var(--text-2);
+      text-align:left;
+      transition:border-color var(--transition-fast),background-color var(--transition-fast),box-shadow var(--transition-fast);
+    }
+    .layer-item:hover{border-color:var(--line-strong);background:var(--surface-2)}
+    .layer-item.active{
+      border-color:#d9dbff;
+      background:var(--brand-soft);
+      color:var(--brand);
+    }
+    .layer-item strong{font-size:12px;font-weight:700}
+    .layer-item span{font-size:11px;color:var(--text-3)}
+    .layer-type{
+      min-width:46px;
+      text-align:right;
+      font-size:11px;
+      font-weight:700;
+      color:var(--text-4);
+      text-transform:capitalize;
+    }
+
+    .toolrail{
+      width:72px;
+      flex-shrink:0;
+      background:#fafbfc;
+      border-right:1px solid rgba(15,23,42,.06);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+      padding:12px 8px;
+      position:relative;
+      z-index:2;
+    }
+    .toolrail-brand{
+      width:40px;
+      height:40px;
+      border-radius:12px;
+      background:var(--surface);
+      border:1px solid rgba(15,23,42,.06);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-bottom:8px;
+    }
+    .toolrail-brand svg{width:18px;height:18px;fill:var(--brand)}
+    .toolrail-nav{
+      flex:1;
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      overflow:hidden;
+    }
+    .toolnav-btn{
+      width:100%;
+      min-height:56px;
+      padding:8px 4px;
+      border-radius:12px;
+      color:var(--text-3);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      border:1px solid transparent;
+      background:transparent;
+      transition:background-color var(--transition-fast),border-color var(--transition-fast),color var(--transition-fast);
+    }
+    .toolnav-btn svg{width:18px;height:18px;stroke:currentColor;fill:none}
+    .toolnav-btn span{font-size:10px;font-weight:700;line-height:1.1;text-align:center}
+    .toolnav-btn:hover{background:var(--surface);border-color:rgba(15,23,42,.06);color:var(--text)}
+    .toolnav-btn.active{
+      background:var(--brand-soft);
+      border-color:#d9dbff;
+      color:var(--brand);
+    }
+    .toolpanel{
+      width:344px;
+      flex-shrink:0;
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+      background:#fbfcfd;
+      border-right:1px solid rgba(15,23,42,.06);
+      margin-left:0;
+      transition:margin-left .22s ease, opacity .18s ease;
+      position:relative;
+      z-index:1;
+    }
+    .app.toolpanel-closed .toolpanel{
+      margin-left:-344px;
+      opacity:0;
+      pointer-events:none;
+    }
+    .toolpanel-head{
+      position:sticky;
+      top:0;
+      z-index:8;
+      min-height:72px;
+      padding:16px;
+      border-bottom:1px solid rgba(15,23,42,.06);
+      background:rgba(251,252,253,.96);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .toolpanel-head strong{display:block;font-size:16px}
+    .toolpanel-head span{display:block;margin-top:4px;font-size:12px;line-height:1.5;color:var(--text-3)}
+    .toolpanel-body{
+      flex:1;
+      min-height:0;
+      overflow-y:auto;
+      overflow-x:hidden;
+      padding:16px;
+      overscroll-behavior:contain;
+    }
+    .toolpanel-body::-webkit-scrollbar{width:8px}
+    .toolpanel-body::-webkit-scrollbar-thumb{background:#d6dbe4;border-radius:999px}
+    .tool-module{display:none}
+    .tool-module.active{display:block}
+    .tool-module .accordion-head{display:none}
+    .tool-module .accordion-body{
+      display:grid;
+      grid-template-columns:minmax(0,1fr);
+      gap:16px;
+      max-height:none;
+      overflow:visible;
+      padding:0;
+      opacity:1;
+    }
+    .tool-module.open .accordion-body{padding:0}
+    .canvas-shell{
+      flex:1;
+      min-width:0;
+      min-height:0;
+      position:relative;
+      overflow:hidden;
+      background:#f7f8fa;
+    }
+    .context-strip{
+      position:absolute;
+      left:20px;
+      right:20px;
+      top:8px;
+      height:40px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:0 4px;
+      background:transparent;
+      z-index:10;
+      transition:opacity var(--transition-fast);
+    }
+    .context-summary{
+      font-size:13px;
+      font-weight:700;
+      color:var(--text-2);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .context-actions{
+      display:none;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .context-strip.selection-active .context-actions{display:flex}
+    .context-strip.selection-active .context-summary{max-width:220px}
+    .tool-group{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:6px;
+      border:1px solid rgba(15,23,42,.06);
+      border-radius:12px;
+      background:rgba(255,255,255,.88);
+      box-shadow:var(--shadow-sm);
+    }
+    .tool-separator{
+      width:1px;
+      height:20px;
+      background:rgba(15,23,42,.08);
+      flex-shrink:0;
+    }
+    .ghost-btn{
+      min-width:64px;
+      min-height:42px;
+      padding:6px 8px;
+      border-radius:10px;
+      border:1px solid transparent;
+      background:transparent;
+      color:var(--text-3);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:3px;
+      transition:border-color var(--transition-fast),background-color var(--transition-fast),color var(--transition-fast),opacity var(--transition-fast);
+    }
+    .ghost-btn svg{width:16px;height:16px;stroke:currentColor;fill:none}
+    .tool-label{font-size:11px;font-weight:700;line-height:1}
+    .tool-kbd{font-size:10px;color:var(--text-4);line-height:1}
+    .ghost-btn:hover{background:var(--surface-2);color:var(--text);border-color:rgba(15,23,42,.06)}
+    .ghost-btn:disabled{opacity:.38;cursor:default}
+    .canvas-scroller{
+      position:absolute;
+      inset:40px 0 0;
+      overflow:auto;
+      padding:32px 5vw 48px;
+      background:#f7f8fa;
+      scroll-behavior:smooth;
+    }
+    .canvas-scroller::-webkit-scrollbar{width:10px;height:10px}
+    .canvas-scroller::-webkit-scrollbar-thumb{background:#d5dae3;border-radius:999px}
+    .canvas-inner{
+      min-width:1120px;
+      min-height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .ruler-frame{
+      position:relative;
+      padding:24px 0 0 24px;
+      transform-origin:center center;
+      transition:transform .18s ease-out;
+      will-change:transform;
+    }
+    .ruler-corner{
+      position:absolute;
+      left:0;
+      top:0;
+      width:24px;
+      height:24px;
+      border-right:1px solid rgba(15,23,42,.08);
+      border-bottom:1px solid rgba(15,23,42,.08);
+      background:rgba(255,255,255,.72);
+    }
+    .ruler{
+      position:absolute;
+      background:rgba(255,255,255,.72);
+      color:var(--text-4);
+      font-size:10px;
+      line-height:1;
+      user-select:none;
+      pointer-events:none;
+    }
+    .ruler-top{
+      left:24px;
+      top:0;
+      width:1080px;
+      height:24px;
+      border-bottom:1px solid rgba(15,23,42,.08);
+      background-image:repeating-linear-gradient(90deg,rgba(15,23,42,.08) 0 1px,transparent 1px 10px);
+    }
+    .ruler-top .ruler-label{
+      position:absolute;
+      top:5px;
+      transform:translateX(-50%);
+    }
+    .ruler-left{
+      left:0;
+      top:24px;
+      width:24px;
+      height:764px;
+      border-right:1px solid rgba(15,23,42,.08);
+      background-image:repeating-linear-gradient(180deg,rgba(15,23,42,.08) 0 1px,transparent 1px 10px);
+    }
+    .ruler-left .ruler-label{
+      position:absolute;
+      left:5px;
+      transform:translateY(-50%);
+    }
+    .app.rulers-hidden .ruler-frame{padding:0}
+    .app.rulers-hidden .ruler,
+    .app.rulers-hidden .ruler-corner{display:none}
+    .cert-stage{
+      position:relative;
+      width:1080px;
+      aspect-ratio:1.414/1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .design-object{
+      position:absolute;
+      z-index:2;
+      border:1px solid transparent;
+      border-radius:8px;
+      cursor:pointer;
+      transition:border-color .14s ease, box-shadow .14s ease;
+    }
+    .design-object:hover{border-color:rgba(99,91,255,.28)}
+    .design-object:focus-visible{
+      border-color:rgba(99,91,255,.95);
+      box-shadow:0 0 0 2px rgba(99,91,255,.12);
+    }
+    .design-object.selected{
+      border-color:rgba(99,91,255,.95);
+      box-shadow:0 0 0 2px rgba(99,91,255,.12);
+    }
+    .design-object.multi{
+      border-style:dashed;
+      box-shadow:0 0 0 2px rgba(99,91,255,.10);
+    }
+    .cert{
+      width:1080px;
+      aspect-ratio:1.414/1;
+      position:relative;
+      background:linear-gradient(180deg,#eefbff 0%,#ffffff 58%,#eefae5 100%);
+      border:1px solid rgba(15,23,42,.06);
+      box-shadow:var(--shadow-sm);
+      transform-origin:center center;
+      user-select:none;
+    }
+    .cert.selected{outline:2px solid var(--brand);outline-offset:4px}
+    .object-text{
+      padding:10px 12px;
+      color:#4c3420;
+    }
+    .object-text .cert-kicker,
+    .object-text .cert-title,
+    .object-text .cert-subtitle,
+    .object-text .cert-copy,
+    .object-text .cert-name,
+    .object-text .cert-detail,
+    .object-text .footer-meta strong,
+    .object-text .footer-meta span,
+    .object-text .signature strong,
+    .object-text .signature span{
+      color:inherit;
+    }
+    .object-text .cert-name{border-bottom-color:currentColor}
+    .object-shape{
+      padding:0;
+      overflow:hidden;
+    }
+    .object-image{
+      padding:0;
+      overflow:hidden;
+    }
+    .cert-sky{
+      position:absolute;
+      inset:0 0 24% 0;
+      overflow:hidden;
+    }
+    .cloud{
+      position:absolute;
+      border-radius:999px;
+      background:rgba(255,255,255,.92);
+    }
+    .cloud::before,.cloud::after{
+      content:"";
+      position:absolute;
+      border-radius:999px;
+      background:inherit;
+    }
+    .c1{width:180px;height:38px;left:240px;top:44px}
+    .c1::before{width:80px;height:60px;left:18px;top:-20px}
+    .c1::after{width:84px;height:56px;right:20px;top:-18px}
+    .c2{width:120px;height:28px;left:86px;top:152px}
+    .c2::before{width:56px;height:40px;left:8px;top:-14px}
+    .c2::after{width:52px;height:36px;right:10px;top:-10px}
+    .c3{width:130px;height:30px;right:80px;top:210px}
+    .c3::before{width:50px;height:42px;left:46px;top:-18px}
+    .c3::after{width:56px;height:34px;right:16px;top:-8px}
+    .c4{width:72px;height:18px;left:710px;top:108px}
+    .c4::before{width:28px;height:24px;left:8px;top:-8px}
+    .c4::after{width:30px;height:22px;right:8px;top:-6px}
+    .cert-content{
+      position:absolute;
+      inset:88px 88px 72px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      text-align:center;
+      color:#4c3420;
+    }
+    .cert-kicker{font-size:18px;letter-spacing:.32em;font-weight:800}
+    .cert-title{font-size:74px;line-height:1.02;font-weight:800;letter-spacing:.02em;margin-top:12px}
+    .cert-subtitle{font-size:56px;line-height:1.08;font-weight:700;margin-top:8px}
+    .cert-copy{font-size:24px;line-height:1.45;color:#5b4635;margin-top:20px}
+    .cert-name{
+      font-size:60px;
+      font-weight:800;
+      margin-top:18px;
+      padding-bottom:16px;
+      border-bottom:1px solid rgba(76,52,32,.35);
+      min-width:520px;
+    }
+    .cert-detail{font-size:18px;line-height:1.55;color:#5b4635;margin-top:20px}
+    .cert-footer{
+      position:absolute;
+      left:72px;
+      right:72px;
+      bottom:56px;
+      display:grid;
+      grid-template-columns:140px 1fr 1fr 220px;
+      align-items:end;
+      gap:20px;
+    }
+    .qr-box{
+      width:96px;
+      height:96px;
+      padding:8px;
+      background:#fff;
+      border:1px solid rgba(17,24,39,.08);
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:1px;
+    }
+    .qr-cell{background:#111827}
+    .qr-cell.blank{background:transparent}
+    .qr-copy{margin-top:8px;font-size:14px;color:#5b4635}
+    .footer-meta strong{display:block;font-size:16px}
+    .footer-meta span{display:block;margin-top:4px;font-size:14px;color:#5b4635}
+    .signature{text-align:center}
+    .signature-line{
+      width:180px;
+      height:1px;
+      background:rgba(76,52,32,.45);
+      margin:0 auto 12px;
+    }
+    .camp{
+      position:absolute;
+      right:44px;
+      bottom:18px;
+      width:240px;
+      height:250px;
+    }
+    .tent{
+      position:absolute;
+      right:10px;
+      bottom:18px;
+      width:150px;
+      height:116px;
+      background:linear-gradient(135deg,#ffd76a,#f0ab2f);
+      clip-path:polygon(50% 0,100% 100%,0 100%);
+      border-radius:12px;
+    }
+    .tent::after{
+      content:"";
+      position:absolute;
+      left:55px;
+      bottom:0;
+      width:42px;
+      height:62px;
+      background:#5a3b1c;
+      clip-path:polygon(0 0,100% 100%,0 100%);
+    }
+    .camper{
+      position:absolute;
+      right:76px;
+      bottom:30px;
+      width:46px;
+      height:94px;
+      background:linear-gradient(180deg,#d8c7a6 0,#c1ac84 38%,#84955e 39%,#7b8b55 100%);
+      border-radius:24px 24px 12px 12px;
+    }
+    .camper::before{
+      content:"";
+      position:absolute;
+      left:5px;
+      top:-20px;
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      background:#f1c99f;
+    }
+    .tree{position:absolute;bottom:30px;width:50px;height:150px}
+    .tree::before{
+      content:"";
+      position:absolute;
+      left:18px;
+      bottom:0;
+      width:8px;
+      height:54px;
+      background:#6b4428;
+      border-radius:999px;
+    }
+    .tree::after{
+      content:"";
+      position:absolute;
+      left:0;
+      bottom:34px;
+      width:50px;
+      height:96px;
+      background:linear-gradient(180deg,#4c9a60 0,#367b4e 100%);
+      clip-path:polygon(50% 0,100% 74%,74% 74%,100% 100%,0 100%,26% 74%,0 74%);
+      border-radius:14px;
+    }
+    .tree.t1{right:170px}
+    .tree.t2{right:16px;height:132px}
+    .tree.t3{right:112px;height:114px}
+    .grass{
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:0;
+      height:64px;
+      background:linear-gradient(180deg,#bfe78b,#9dd86f);
+    }
+    .campfire{
+      position:absolute;
+      right:6px;
+      bottom:22px;
+      width:30px;
+      height:34px;
+      background:
+        radial-gradient(circle at 50% 35%,#ffde7a 0 24%,transparent 25%),
+        radial-gradient(circle at 50% 62%,#ff8a3d 0 32%,transparent 33%);
+    }
+    .canvas-empty-note{
+      position:absolute;
+      top:20px;
+      left:50%;
+      transform:translateX(-50%);
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.92);
+      border:1px solid var(--line);
+      font-size:12px;
+      color:var(--text-3);
+      box-shadow:var(--shadow-sm);
+    }
+    .inspector{
+      position:absolute;
+      right:0;
+      top:0;
+      bottom:0;
+      width:var(--inspector-width);
+      border-left:1px solid rgba(15,23,42,.06);
+      background:#fbfcfd;
+      display:flex;
+      min-width:0;
+      flex-direction:column;
+      z-index:50;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .app.inspector-open .inspector{
+      transform: translateX(0);
+    }
+    .inspector-head{
+      height:56px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:0 16px;
+      border-bottom:1px solid rgba(15,23,42,.05);
+    }
+    .inspector-head strong{display:block;font-size:14px}
+    .inspector-head span{display:block;margin-top:2px;font-size:12px;color:var(--text-3)}
+    .inspector-body{
+      flex:1;
+      overflow:auto;
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .inspect-accordion{
+      border:1px solid rgba(15,23,42,.06);
+      border-radius:12px;
+      background:var(--surface);
+      overflow:hidden;
+    }
+    .inspect-head{
+      width:100%;
+      min-height:48px;
+      padding:0 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      font-size:13px;
+      font-weight:700;
+      color:var(--text);
+      text-align:left;
+    }
+    .inspect-head svg{width:14px;height:14px;stroke:var(--text-4);fill:none}
+    .inspect-body{
+      display:none;
+      padding:2px 14px 14px;
+    }
+    .inspect-accordion.open .inspect-body{display:block}
+    .inspect-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:10px;
+    }
+    .inspect-row label{
+      font-size:12px;
+      font-weight:700;
+      color:var(--text-2);
+    }
+    .inspector-mode{display:none}
+    .inspector-mode.active{display:flex;flex-direction:column;gap:10px}
+    .inspector-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .mini-input,.mini-select{
+      height:36px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:var(--surface);
+      padding:0 10px;
+      font-size:var(--font-xs);
+      color:var(--text);
+      width:100%;
+    }
+    .switch{
+      width:40px;
+      height:24px;
+      border-radius:999px;
+      border:1px solid #d9dbff;
+      background:#dfe3ff;
+      position:relative;
+      flex-shrink:0;
+    }
+    .switch::after{
+      content:"";
+      position:absolute;
+      top:2px;
+      left:18px;
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      background:#635bff;
+      transition:left .16s ease, background-color .16s ease;
+    }
+    .switch.off{
+      border-color:var(--line);
+      background:#eef1f5;
+    }
+    .switch.off::after{
+      left:2px;
+      background:#98a2b3;
+    }
+    .color-button{
+      width:36px;
+      height:36px;
+      border-radius:10px;
+      border:1px solid var(--line-strong);
+      flex-shrink:0;
+    }
+    .color-row{display:flex;align-items:center;gap:8px;width:100%}
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:52px;
+      transform:translateX(-50%);
+      background:#111827;
+      color:#fff;
+      padding:10px 14px;
+      border-radius:10px;
+      font-size:12px;
+      font-weight:600;
+      display:none;
+      z-index:100;
+      box-shadow:var(--shadow-sm);
+    }
+    .empty-card{
+      margin-top:12px;
+      padding:16px;
+      border:1px dashed var(--line);
+      border-radius:var(--radius-md);
+      background:var(--surface);
+      color:var(--text-3);
+      font-size:var(--font-xs);
+      text-align:center;
+    }
+    .is-loading{
+      position:relative;
+      pointer-events:none;
+      color:transparent !important;
+    }
+    .is-loading svg{opacity:0}
+    .is-loading::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:50%;
+      width:14px;
+      height:14px;
+      margin:-7px 0 0 -7px;
+      border:2px solid rgba(99,91,255,.24);
+      border-top-color:var(--brand);
+      border-radius:50%;
+      animation:spin .7s linear infinite;
+    }
+    @keyframes spin{
+      to{transform:rotate(360deg)}
+    }
+    @media (prefers-reduced-motion: reduce){
+      *,
+      *::before,
+      *::after{
+        animation:none !important;
+        transition:none !important;
+        scroll-behavior:auto !important;
+      }
+    }
+    .color-popover{
+      position:fixed;
+      width:332px;
+      border:1px solid var(--line);
+      border-radius:20px;
+      background:var(--surface);
+      box-shadow:var(--shadow-sm);
+      padding:16px;
+      z-index:90;
+      display:none;
+    }
+    .color-popover.show{display:block}
+    .picker-sv{
+      position:relative;
+      height:220px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      overflow:hidden;
+      cursor:crosshair;
+      background:red;
+    }
+    .picker-sv::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(90deg,#fff,rgba(255,255,255,0));
+    }
+    .picker-sv::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg,rgba(0,0,0,0),#000);
+    }
+    .picker-handle{
+      position:absolute;
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      border:3px solid #fff;
+      box-shadow:0 1px 4px rgba(17,24,39,.28);
+      transform:translate(-50%,-50%);
+      pointer-events:none;
+    }
+    .picker-bar{
+      margin-top:14px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .picker-bar label{
+      width:18px;
+      font-size:12px;
+      color:var(--text-3);
+      text-align:center;
+    }
+    .range{
+      -webkit-appearance:none;
+      appearance:none;
+      width:100%;
+      height:12px;
+      border-radius:999px;
+      border:none;
+      outline:none;
+    }
+    .range::-webkit-slider-thumb{
+      -webkit-appearance:none;
+      appearance:none;
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      border:3px solid #fff;
+      box-shadow:0 1px 4px rgba(17,24,39,.28);
+      background:#fff;
+    }
+    .range::-moz-range-thumb{
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      border:3px solid #fff;
+      box-shadow:0 1px 4px rgba(17,24,39,.28);
+      background:#fff;
+    }
+    .hue-range{background:linear-gradient(90deg,#ff0000 0%,#ffff00 17%,#00ff00 33%,#00ffff 50%,#0000ff 67%,#ff00ff 83%,#ff0000 100%)}
+    .alpha-range{background:linear-gradient(90deg,transparent,#000)}
+    .picker-meta{
+      display:grid;
+      grid-template-columns:72px 1fr 72px;
+      margin-top:14px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      overflow:hidden;
+    }
+    .picker-meta select,.picker-meta input{
+      height:42px;
+      border:none;
+      background:var(--surface);
+      padding:0 12px;
+      font-size:13px;
+    }
+    .picker-alpha{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-left:1px solid var(--line);
+      background:var(--surface-2);
+      font-size:13px;
+      font-weight:700;
+      color:var(--text-2);
+    }
+    .picker-swatches{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:repeat(8,1fr);
+      gap:8px;
+    }
+    .picker-swatch{
+      width:100%;
+      aspect-ratio:1/1;
+      border-radius:10px;
+      border:1px solid var(--line);
+      cursor:pointer;
+    }
+    .bottombar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:0 16px;
+      border-top:1px solid rgba(15,23,42,.06);
+      background:rgba(255,255,255,.94);
+      font-size:12px;
+      color:var(--text-3);
+    }
+    .bottom-group{display:flex;align-items:center;gap:16px;min-width:0}
+    .bottom-pill{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      white-space:nowrap;
+    }
+    .status-dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--success);
+    }
+    .shortcut-copy{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    @media (max-width: 1280px){
+      .ruler-top{width:960px}
+      .ruler-left{height:679px}
+      .cert-stage,.cert{width:960px}
+      .cert-title{font-size:64px}
+      .cert-subtitle{font-size:50px}
+      .cert-name{font-size:52px}
+    }
+    @media (max-width: 1080px){
+      .topbar{
+        grid-template-columns:auto 1fr auto;
+      }
+      .topbar-center{justify-content:flex-start}
+
+      .sidebar{
+        width:72px;
+        overflow:visible;
+      }
+      .toolrail{
+        margin:12px 0 12px 12px;
+        border:1px solid rgba(15,23,42,.06);
+        border-radius:16px;
+        box-shadow:var(--shadow-md);
+        background:#fafbfc;
+      }
+      .toolpanel{
+        position:absolute;
+        left:84px;
+        top:12px;
+        bottom:12px;
+        width:min(344px,calc(100vw - 108px));
+        border:1px solid rgba(15,23,42,.06);
+        border-radius:16px;
+        box-shadow:var(--shadow-md);
+        overflow:hidden;
+      }
+      .app.toolpanel-closed .toolpanel{
+        transform:translateX(-16px);
+      }
+      .inspector{
+        position:absolute;
+        right:12px;
+        top:12px;
+        bottom:12px;
+        width:min(288px,calc(100vw - 24px));
+        border:1px solid rgba(15,23,42,.06);
+        border-radius:12px;
+        box-shadow:var(--shadow-md);
+        z-index:60;
+        transform: translateX(120%);
+      }
+      .context-strip{
+        left:16px;
+        right:16px;
+      }
+      .canvas-scroller{padding:28px 24px 40px}
+    }
+    @media (max-width: 720px){
+      .topbar{
+        grid-template-columns:auto 1fr auto;
+        padding:0 8px 0 12px;
+        gap:8px;
+      }
+      .topbar-right .action-btn span,
+      .topbar-left .doc-name{max-width:140px}
+      .topbar-right .action-btn{padding:0 10px}
+      .topbar-right .action-btn:nth-child(4){display:none}
+      .toolrail{
+        width:64px;
+        margin:12px 0 12px 8px;
+        padding:8px 6px;
+      }
+      .toolnav-btn span{font-size:9px}
+      .toolpanel{
+        left:12px;
+        right:12px;
+        bottom:12px;
+        top:auto;
+        width:auto;
+        height:min(72vh,620px);
+        border-radius:20px;
+        transform:translateY(0);
+      }
+      .app.toolpanel-closed .toolpanel{
+        transform:translateY(108%);
+      }
+      .context-strip{
+        top:6px;
+        left:12px;
+        right:12px;
+        height:auto;
+        min-height:36px;
+        align-items:flex-start;
+        flex-direction:column;
+        padding:0;
+      }
+      .canvas-scroller{padding:44px 12px 36px}
+      .canvas-inner{min-width:744px}
+      .ruler-top{width:720px}
+      .ruler-left{height:509px}
+      .cert-stage,.cert{width:720px}
+      .cert-content{inset:64px 48px 64px}
+      .cert-title{font-size:52px}
+      .cert-subtitle{font-size:40px}
+      .cert-copy{font-size:20px}
+      .cert-name{font-size:42px;min-width:0;width:100%}
+      .inspector{
+        top:auto;
+        left:0;
+        right:0;
+        bottom:0;
+        width:auto;
+        height:min(72vh,560px);
+        border-radius:20px 20px 0 0;
+        border-left:none;
+        border-right:none;
+        border-bottom:none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn" id="sidebarToggle" title="Toggle sidebar">
+          <svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <div class="logo-lockup">
+          <div class="brand-mark">
+            <svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+          </div>
+          <div class="doc-name" id="docName" contenteditable="true" spellcheck="false" role="textbox" aria-label="Document name">bootcamp certificate</div>
+        </div>
+      </div>
+      <div class="topbar-center">
+        <div class="top-group">
+          <button class="icon-btn" data-toast="Undo coming soon" title="Undo">
+            <svg viewBox="0 0 16 16"><path d="M3 7a5 5 0 1 1 1.1 3.1M3 4v4h4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="icon-btn" data-toast="Redo coming soon" title="Redo">
+            <svg viewBox="0 0 16 16"><path d="M13 7a5 5 0 1 0-1.1 3.1M13 4v4H9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="icon-btn" id="zoomOut" title="Zoom out">
+            <svg viewBox="0 0 16 16"><path d="M3 8h10" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <div class="zoom-readout" id="zoomTop">100%</div>
+          <button class="icon-btn" id="zoomIn" title="Zoom in">
+            <svg viewBox="0 0 16 16"><path d="M3 8h10M8 3v10" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="action-btn" id="btnPreview">
+          <svg viewBox="0 0 16 16"><path d="M1 8s3-4.5 7-4.5S15 8 15 8s-3 4.5-7 4.5S1 8 1 8z"/><circle cx="8" cy="8" r="2.2" stroke-width="1.3"/></svg>
+          <span>Preview</span>
+        </button>
+        <button class="action-btn" id="btnExport">
+          <svg viewBox="0 0 16 16"><path d="M8 2v8M5 8l3 3 3-3M3 13h10" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Export</span>
+        </button>
+        <button class="action-btn" id="btnShare">
+          <svg viewBox="0 0 16 16"><circle cx="12" cy="4" r="2"/><circle cx="4" cy="8" r="2"/><circle cx="12" cy="12" r="2"/><path d="M5.8 7.2l4.4-2.4M5.8 8.8l4.4 2.4" stroke-width="1.3"/></svg>
+          <span>Share</span>
+        </button>
+        <div class="profile">S</div>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <aside class="sidebar">
+        <nav class="toolrail" aria-label="Editor tools">
+          <div class="toolrail-brand">
+            <svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+          </div>
+          <div class="toolrail-nav">
+            <button class="toolnav-btn active" data-tool="templates" title="Templates"><svg viewBox="0 0 20 20"><rect x="3" y="3" width="6" height="6" rx="1.2"/><rect x="11" y="3" width="6" height="6" rx="1.2"/><rect x="3" y="11" width="6" height="6" rx="1.2"/><rect x="11" y="11" width="6" height="6" rx="1.2"/></svg><span>Templates</span></button>
+            <button class="toolnav-btn" data-tool="text" title="Text"><svg viewBox="0 0 20 20"><path d="M4 5h12M10 5v10M6 15h8" stroke-width="1.5" stroke-linecap="round"/></svg><span>Text</span></button>
+            <button class="toolnav-btn" data-tool="elements" title="Elements"><svg viewBox="0 0 20 20"><path d="M10 3l1.7 5.2H17l-4.3 3.1 1.6 5L10 13.6 5.7 16.3l1.6-5L3 8.2h5.3z" stroke-width="1.4" stroke-linejoin="round"/></svg><span>Elements</span></button>
+            <button class="toolnav-btn" data-tool="media" title="Media"><svg viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="12" rx="2"/><path d="M5 13l3-3 3 2 4-5 2 2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Media</span></button>
+            <button class="toolnav-btn" data-tool="variables" title="Variables"><svg viewBox="0 0 20 20"><path d="M6 6h8M6 10h5M6 14h8" stroke-width="1.5" stroke-linecap="round"/><path d="M14 4l3 3-3 3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Variables</span></button>
+            <button class="toolnav-btn" data-tool="dynamic" title="Dynamic"><svg viewBox="0 0 20 20"><path d="M4 10h12M10 4v12" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="6" stroke-width="1.5"/></svg><span>Dynamic</span></button>
+            <button class="toolnav-btn" data-tool="qrstudio" title="QR"><svg viewBox="0 0 20 20"><rect x="4" y="4" width="12" height="12" rx="2"/><rect x="7" y="7" width="2.4" height="2.4" fill="currentColor" stroke="none"/><rect x="11" y="7" width="2.4" height="2.4" fill="currentColor" stroke="none"/><rect x="7" y="11" width="2.4" height="2.4" fill="currentColor" stroke="none"/></svg><span>QR</span></button>
+            <button class="toolnav-btn" data-tool="signatures" title="Signature"><svg viewBox="0 0 20 20"><path d="M4 14c3-4 5-6 7-6 2 0 2 3 4 3 1 0 2-.8 3-2" stroke-width="1.5" stroke-linecap="round"/><path d="M4 17h12" stroke-width="1.5" stroke-linecap="round"/></svg><span>Sign</span></button>
+            <button class="toolnav-btn" data-tool="brand" title="Brand"><svg viewBox="0 0 20 20"><path d="M4 6h12v8H4z" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 10h6" stroke-width="1.5" stroke-linecap="round"/></svg><span>Brand</span></button>
+            <button class="toolnav-btn" data-tool="smart" title="AI Designer"><svg viewBox="0 0 20 20"><path d="M10 3c-1 2-3 3-5 3 0 5 2 8 5 10 2-1.2 5-4.2 5-10-2 0-4-1-5-3z" stroke-width="1.4" stroke-linejoin="round"/></svg><span>AI</span></button>
+            <button class="toolnav-btn" data-tool="layers" title="Layers"><svg viewBox="0 0 20 20"><path d="M10 3l7 4-7 4-7-4 7-4zM3 10l7 4 7-4M3 13l7 4 7-4" stroke-width="1.4" stroke-linejoin="round"/></svg><span>Layers</span></button>
+          </div>
+        </nav>
+        <div class="toolpanel" id="toolpanel">
+          <div class="toolpanel-head">
+            <div>
+              <strong id="toolpanelTitle">Templates</strong>
+              <span id="toolpanelDesc">Choose and swap certificate layouts.</span>
+            </div>
+            <button class="icon-btn" id="sidebarCollapse" title="Close tool panel">
+              <svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
+          </div>
+          <div class="toolpanel-body" id="toolpanelBody">
+          <section class="tool-module active" data-module="templates">
+            <button class="accordion-head" data-accordion="templates">
+              <div class="accordion-icon">
+                <svg viewBox="0 0 20 20"><rect x="3" y="3" width="6" height="6" rx="1.2"/><rect x="11" y="3" width="6" height="6" rx="1.2"/><rect x="3" y="11" width="6" height="6" rx="1.2"/><rect x="11" y="11" width="6" height="6" rx="1.2"/></svg>
+              </div>
+              <div class="accordion-copy">
+                <strong>Templates</strong>
+                <span>Choose and swap certificate layouts.</span>
+              </div>
+              <div class="accordion-caret">
+                <svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </button>
+            <div class="accordion-body">
+              <div class="search">
+                <svg viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4" stroke-width="1.5"/><path d="M10 10l3 3" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <input placeholder="Search templates..." />
+              </div>
+              <div class="panel-tabs" data-tab-group="templates">
+                <button class="panel-tab active" data-tab-target="templates-all">All</button>
+                <button class="panel-tab" data-tab-target="templates-awards">Awards</button>
+                <button class="panel-tab" data-tab-target="templates-training">Training</button>
+                <button class="panel-tab" data-tab-target="templates-appreciation">Appreciation</button>
+              </div>
+              <div class="toolbar-row">
+                <button class="chip active">All</button>
+                <button class="chip">Bootcamp</button>
+                <button class="chip">Award</button>
+              </div>
+              <div class="grid-2">
+                <button class="template-card selected">
+                  <div class="template-preview" style="background:linear-gradient(180deg,#dff5ff,#fff9df 58%,#d8efbc)">
+                    <div class="mini-cert">
+                      <div class="l1">CERTIFICATE OF</div>
+                      <div class="l2">BOOTCAMPCAMP</div>
+                      <div class="l3">{{fullName}}</div>
+                    </div>
+                  </div>
+                  <div class="template-info"><strong>Current</strong><span>Bootcamp certificate</span></div>
+                </button>
+                <button class="template-card">
+                  <div class="template-preview" style="background:linear-gradient(135deg,#11253c,#1b4974)">
+                    <div class="mini-cert" style="background:rgba(255,255,255,.08);color:#fff2be">
+                      <div class="l1">CERTIFICATE OF</div>
+                      <div class="l2">ACHIEVEMENT</div>
+                      <div class="l3">{{fullName}}</div>
+                    </div>
+                  </div>
+                  <div class="template-info"><strong>Executive</strong><span>Premium layout</span></div>
+                </button>
+                <button class="template-card">
+                  <div class="template-preview" style="background:linear-gradient(180deg,#f7fbff,#ffffff)">
+                    <div class="mini-cert" style="border:1px solid rgba(17,24,39,.08);color:#1f2937">
+                      <div class="l1">CERTIFICATE OF</div>
+                      <div class="l2">PARTICIPATION</div>
+                      <div class="l3">{{fullName}}</div>
+                    </div>
+                  </div>
+                  <div class="template-info"><strong>Minimal</strong><span>Clean print style</span></div>
+                </button>
+                <button class="template-card">
+                  <div class="template-preview" style="background:linear-gradient(180deg,#f3f7ec,#d9efbc)">
+                    <div class="mini-cert" style="color:#2f4f36">
+                      <div class="l1">CERTIFICATE OF</div>
+                      <div class="l2">COMPLETION</div>
+                      <div class="l3">{{fullName}}</div>
+                    </div>
+                  </div>
+                  <div class="template-info"><strong>Campus</strong><span>Education theme</span></div>
+                </button>
+              </div>
+              <div class="upload-actions" style="justify-content:flex-start;margin-top:12px">
+                <button class="primary-btn" data-toast="Selected template applied">Use selected</button>
+                <button class="secondary-btn" data-toast="Blank certificate flow opened">Start blank</button>
+              </div>
+              <div class="stack-list">
+                <div class="list-row"><div><strong>Recent template</strong><span>Summer Camp 2024</span></div><span class="secondary-meta">Recently used</span></div>
+                <div class="list-row"><div><strong>Saved workspace preset</strong><span>Bootcamp default stack</span></div><span class="secondary-meta">Brand-ready</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="tool-module" data-module="text">
+            <button class="accordion-head" data-accordion="text">
+              <div class="accordion-icon">
+                <svg viewBox="0 0 20 20"><path d="M4 5h12M10 5v10M6 15h8" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div class="accordion-copy">
+                <strong>Text</strong>
+                <span>Presets, type pairings, and certificate copy blocks.</span>
+              </div>
+              <div class="accordion-caret">
+                <svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </button>
+            <div class="accordion-body">
+              <div class="panel-tabs" data-tab-group="textTools">
+                <button class="panel-tab active" data-tab-target="text-presets">Presets</button>
+                <button class="panel-tab" data-tab-target="text-styles">Styles</button>
+                <button class="panel-tab" data-tab-target="text-combos">Combos</button>
+              </div>
+              <div class="panel-pane active" data-tab-panel="text-presets">
+                <div class="feature-grid">
+                  <button class="text-preview" data-toast="Certificate title preset inserted">
+                    <div class="preview-title">Certificate Title</div>
+                    <div class="preview-body">Large hierarchy with certificate-ready spacing.</div>
+                  </button>
+                  <button class="text-preview" data-toast="Recipient name preset inserted">
+                    <div class="preview-title" style="font-size:22px">{{fullName}}</div>
+                    <div class="preview-body">Dynamic recipient block with underline emphasis.</div>
+                  </button>
+                </div>
+                <div class="stack-list">
+                  <div class="list-row"><div><strong>Heading preset</strong><span>Poppins 72 / Semibold subtitle</span></div><span class="secondary-meta">H1</span></div>
+                  <div class="list-row"><div><strong>Body preset</strong><span>Certificate details and support copy</span></div><span class="secondary-meta">Body</span></div>
+                </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="text-styles">
+                <div class="style-stack">
+                  <div class="style-row"><div><strong>Formal Serif</strong><span>Elegant title + classic body</span></div><button class="utility-btn" data-toast="Formal Serif applied">Apply</button></div>
+                  <div class="style-row"><div><strong>Academic Sans</strong><span>Modern hierarchy for training certificates</span></div><button class="utility-btn" data-toast="Academic Sans applied">Apply</button></div>
+                  <div class="style-row"><div><strong>Executive Contrast</strong><span>High-contrast premium headline system</span></div><button class="utility-btn" data-toast="Executive Contrast applied">Apply</button></div>
+                </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="text-combos">
+                <div class="stack-list">
+                  <div class="list-row"><div><strong>Completion copy set</strong><span>Title, recipient, details, date, signature</span></div><span class="secondary-meta">5 blocks</span></div>
+                  <div class="list-row"><div><strong>Achievement copy set</strong><span>Achievement headline with award-ready language</span></div><span class="secondary-meta">Preset</span></div>
+                  <div class="list-row"><div><strong>Appreciation copy set</strong><span>For appreciation and recognition certificates</span></div><span class="secondary-meta">Preset</span></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="tool-module" data-module="elements">
+            <button class="accordion-head" data-accordion="elements">
+              <div class="accordion-icon">
+                <svg viewBox="0 0 20 20"><path d="M10 3l1.7 5.2H17l-4.3 3.1 1.6 5L10 13.6 5.7 16.3l1.6-5L3 8.2h5.3z" stroke-width="1.4" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="accordion-copy">
+                <strong>Elements</strong>
+                <span>Add text, shapes, badges, and QR blocks.</span>
+              </div>
+              <div class="accordion-caret">
+                <svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </button>
+            <div class="accordion-body">
+              <div class="search">
+                <svg viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4" stroke-width="1.5"/><path d="M10 10l3 3" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <input placeholder="Search shapes, icons, frames..." />
+              </div>
+              <div class="panel-tabs" data-tab-group="elementsTools">
+                <button class="panel-tab active" data-tab-target="elements-shapes">Shapes</button>
+                <button class="panel-tab" data-tab-target="elements-icons">Icons</button>
+                <button class="panel-tab" data-tab-target="elements-frames">Frames</button>
+                <button class="panel-tab" data-tab-target="elements-tables">Tables</button>
+                <button class="panel-tab" data-tab-target="elements-badges">Badges</button>
+                <button class="panel-tab" data-tab-target="elements-decor">Decor</button>
+              </div>
+              <div class="panel-pane active" data-tab-panel="elements-shapes">
+                <div class="feature-grid">
+                  <button class="tool-card" data-toast="Rectangle shape added">
+                    <div class="tool-thumb"><svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="2"/></svg></div>
+                    <div class="tool-meta"><strong>Rectangle</strong><span>Base panel, image mask, or section block.</span></div>
+                  </button>
+                  <button class="tool-card" data-toast="Circle shape added">
+                    <div class="tool-thumb"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/></svg></div>
+                    <div class="tool-meta"><strong>Circle</strong><span>Seals, badges, and avatar frames.</span></div>
+                  </button>
+                  <button class="tool-card" data-toast="Line element added">
+                    <div class="tool-thumb"><svg viewBox="0 0 24 24"><path d="M5 12h14" stroke-linecap="round"/></svg></div>
+                    <div class="tool-meta"><strong>Line</strong><span>Signature rules and layout separators.</span></div>
+                  </button>
+                  <button class="tool-card" data-toast="Ribbon shape added">
+                    <div class="tool-thumb"><svg viewBox="0 0 24 24"><path d="M6 6h12v8H6zM8 14l2 4 2-2 2 2 2-4" stroke-linejoin="round"/></svg></div>
+                    <div class="tool-meta"><strong>Ribbon</strong><span>Award-ready decorative block.</span></div>
+                  </button>
+                </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="elements-icons">
+                <div class="feature-grid">
+                  <button class="tool-card" data-toast="Medal icon added"><div class="tool-thumb"><svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="5"/><path d="M9 15l-2 5 5-3 5 3-2-5" stroke-linejoin="round"/></svg></div><div class="tool-meta"><strong>Medal</strong><span>Achievement and awards.</span></div></button>
+                  <button class="tool-card" data-toast="Star icon added"><div class="tool-thumb"><svg viewBox="0 0 24 24"><path d="M12 4l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 16.5 7.2 19l.9-5.4L4.2 9.7l5.4-.8z" stroke-linejoin="round"/></svg></div><div class="tool-meta"><strong>Star</strong><span>Highlights and decorations.</span></div></button>
+                  <button class="tool-card" data-toast="Shield icon added"><div class="tool-thumb"><svg viewBox="0 0 24 24"><path d="M12 4l7 3v5c0 4-2.7 6.9-7 8-4.3-1.1-7-4-7-8V7z" stroke-linejoin="round"/></svg></div><div class="tool-meta"><strong>Shield</strong><span>Verification and trust visuals.</span></div></button>
+                  <button class="tool-card" data-toast="Spark icon added"><div class="tool-thumb"><svg viewBox="0 0 24 24"><path d="M12 4l1.5 4.5L18 10l-4.5 1.5L12 16l-1.5-4.5L6 10l4.5-1.5z" stroke-linejoin="round"/></svg></div><div class="tool-meta"><strong>Spark</strong><span>Subtle embellishment.</span></div></button>
+                </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="elements-frames">
+                <div class="stack-list">
+                  <div class="list-row"><div><strong>Certificate frame</strong><span>Thin border with corner details</span></div><button class="utility-btn" data-toast="Certificate frame added">Add</button></div>
+                  <div class="list-row"><div><strong>Photo frame</strong><span>Rounded photo and badge mask</span></div><button class="utility-btn" data-toast="Photo frame added">Add</button></div>
+                  <div class="list-row"><div><strong>Seal frame</strong><span>Circular stamp holder</span></div><button class="utility-btn" data-toast="Seal frame added">Add</button></div>
+                </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="elements-tables">
+                <div class="stack-list">
+                  <div class="list-row"><div><strong>2-column table</strong><span>Results and attributes</span></div><button class="utility-btn" data-toast="2-column table inserted">Insert</button></div>
+                  <div class="list-row"><div><strong>Attendance grid</strong><span>Training completion records</span></div><button class="utility-btn" data-toast="Attendance grid inserted">Insert</button></div>
+                </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="elements-badges">
+                <div class="feature-grid">
+                  <button class="tool-card" data-toast="Gold badge added"><div class="tool-thumb" style="background:linear-gradient(180deg,#fff6d3,#ffe38a)"></div><div class="tool-meta"><strong>Gold Badge</strong><span>Recognition marker.</span></div></button>
+                  <button class="tool-card" data-toast="Seal badge added"><div class="tool-thumb" style="background:linear-gradient(180deg,#eef2ff,#d6dcff)"></div><div class="tool-meta"><strong>Verification Seal</strong><span>Approval and trust.</span></div></button>
+                </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="elements-decor">
+                <div class="feature-grid">
+                  <button class="tool-card" data-toast="Leaf accent added"><div class="tool-thumb" style="background:linear-gradient(180deg,#f3fbef,#def2cb)"></div><div class="tool-meta"><strong>Leaf Accent</strong><span>Organic border ornament.</span></div></button>
+                  <button class="tool-card" data-toast="Corner flourish added"><div class="tool-thumb" style="background:linear-gradient(180deg,#f8f8ff,#edefff)"></div><div class="tool-meta"><strong>Corner Flourish</strong><span>Decorative premium detail.</span></div></button>
+                </div>
+              </div>
+              <div class="subsection-label">QR Tools</div>
+              <div class="utility-row">
+                <button class="utility-btn" data-toast="QR verification opened">Verify QR</button>
+                <button class="utility-btn" data-toast="Dynamic QR bound">Bind dynamic QR</button>
+                <button class="utility-btn" data-toast="Signature line added">Signature line</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="tool-module" data-module="media">
+            <button class="accordion-head" data-accordion="media">
+              <div class="accordion-icon">
+                <svg viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="12" rx="2"/><path d="M5 13l3-3 3 2 4-5 2 2" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="8" r="1.2" fill="currentColor" stroke="none"/></svg>
+              </div>
+              <div class="accordion-copy">
+                <strong>Media</strong>
+                <span>Backgrounds, uploads, and brand imagery.</span>
+              </div>
+              <div class="accordion-caret">
+                <svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </button>
+            <div class="accordion-body">
+              <div class="search">
+                <svg viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4" stroke-width="1.5"/><path d="M10 10l3 3" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <input placeholder="Search uploads, photos, media..." />
+              </div>
+              <div class="panel-tabs" data-tab-group="mediaTools">
+                <button class="panel-tab active" data-tab-target="media-backgrounds">Backgrounds</button>
+                <button class="panel-tab" data-tab-target="media-uploads">Uploads</button>
+                <button class="panel-tab" data-tab-target="media-photos">Photos</button>
+                <button class="panel-tab" data-tab-target="media-library">Library</button>
+              </div>
+              <div class="panel-pane active" data-tab-panel="media-backgrounds">
+              <div class="toolbar-row">
+                <button class="chip active">Backgrounds</button>
+                <button class="chip">Uploads</button>
+                <button class="chip">Logos</button>
+              </div>
+              <div class="grid-2">
+                <button class="asset-card selected bg-choice" data-bg="linear-gradient(180deg,#eefbff 0%,#ffffff 58%,#eefae5 100%)" data-color="#EEFBFF">
+                  <div class="asset-preview" style="background:radial-gradient(circle at 12% 14%,rgba(162,221,255,.52),transparent 24%),radial-gradient(circle at 88% 10%,rgba(255,214,162,.58),transparent 24%),linear-gradient(180deg,#eefbff 0%,#ffffff 58%,#eefae5 100%)"></div>
+                  <div class="asset-info"><strong>Soft Academic</strong><span>Current background</span></div>
+                </button>
+                <button class="asset-card bg-choice" data-bg="linear-gradient(180deg,#dff2ff 0%,#fff4d2 52%,#d4f0c4 100%)" data-color="#DFF2FF">
+                  <div class="asset-preview" style="background:radial-gradient(circle at 20% 18%,rgba(255,255,255,.68),transparent 22%),radial-gradient(circle at 76% 16%,rgba(255,233,183,.68),transparent 24%),linear-gradient(180deg,#dff2ff 0%,#fff4d2 52%,#d4f0c4 100%)"></div>
+                  <div class="asset-info"><strong>Sunny Meadow</strong><span>Warm outdoor</span></div>
+                </button>
+                <button class="asset-card bg-choice" data-bg="linear-gradient(180deg,#d8f1ff 0%,#fff0c7 55%,#d8f7b0 100%)" data-color="#D8F1FF">
+                  <div class="asset-preview" style="background:radial-gradient(circle at 14% 12%,rgba(134,207,255,.6),transparent 24%),radial-gradient(circle at 88% 22%,rgba(255,190,128,.58),transparent 24%),linear-gradient(180deg,#d8f1ff 0%,#fff0c7 55%,#d8f7b0 100%)"></div>
+                  <div class="asset-info"><strong>Warm Horizon</strong><span>Friendly and bright</span></div>
+                </button>
+                <button class="asset-card bg-choice" data-bg="linear-gradient(135deg,#05285f 0%,#1f7dd6 45%,#8fe4ff 100%)" data-color="#1F7DD6">
+                  <div class="asset-preview" style="background:radial-gradient(circle at 50% 48%,rgba(149,247,255,.56),transparent 28%),linear-gradient(135deg,#05285f 0%,#1f7dd6 45%,#8fe4ff 100%)"></div>
+                  <div class="asset-info"><strong>Blue Aurora</strong><span>Premium contrast</span></div>
+                </button>
+              </div>
+              <div class="upload-box">
+                <p>Upload signatures, seals, and media without leaving the workspace.</p>
+                <div class="upload-actions">
+                  <button class="secondary-btn" data-toast="Upload dialog opened">Upload file</button>
+                  <button class="secondary-btn" data-toast="Asset library opened">View uploads</button>
+                </div>
+              </div>
+              <div class="subsection-label">Quick Access</div>
+              <div class="utility-row">
+                <button class="utility-btn" data-toast="Background library opened">Backgrounds</button>
+                <button class="utility-btn" data-toast="Uploads panel opened">Uploads</button>
+                <button class="utility-btn" data-toast="Logo drawer opened">Brand logos</button>
+              </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="media-uploads">
+                <div class="upload-box">
+                  <p>Drag and drop logos, signatures, and supporting assets directly into the editor.</p>
+                  <div class="upload-actions">
+                    <button class="secondary-btn" data-toast="Upload dialog opened">Upload media</button>
+                    <button class="secondary-btn" data-toast="Folder picker opened">Import folder</button>
+                  </div>
+                </div>
+                <div class="stack-list">
+                  <div class="list-row"><div><strong>organization-seal.png</strong><span>Saved in brand assets</span></div><span class="secondary-meta">PNG</span></div>
+                  <div class="list-row"><div><strong>signature-trainer.svg</strong><span>Reusable signature asset</span></div><span class="secondary-meta">SVG</span></div>
+                </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="media-photos">
+                <div class="feature-grid">
+                  <button class="asset-card" data-toast="Outdoor photo inserted"><div class="asset-preview" style="background:linear-gradient(180deg,#dff3ff,#b8e4ff 58%,#97d68d)"></div><div class="asset-info"><strong>Outdoor Scene</strong><span>Certificate hero image</span></div></button>
+                  <button class="asset-card" data-toast="Audience photo inserted"><div class="asset-preview" style="background:linear-gradient(180deg,#fef3d5,#ffe39c 58%,#d7f1cc)"></div><div class="asset-info"><strong>Audience Photo</strong><span>Event completion visual</span></div></button>
+                </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="media-library">
+                <div class="stack-list">
+                  <div class="list-row"><div><strong>Brand media library</strong><span>Organization-approved logos and seals</span></div><button class="utility-btn" data-toast="Brand media library opened">Open</button></div>
+                  <div class="list-row"><div><strong>Shared certificate assets</strong><span>Templates, stamps, and decorative packs</span></div><button class="utility-btn" data-toast="Shared assets opened">Open</button></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="tool-module" data-module="variables">
+            <button class="accordion-head" data-accordion="variables">
+              <div class="accordion-icon">
+                <svg viewBox="0 0 20 20"><path d="M6 6h8M6 10h5M6 14h8" stroke-width="1.5" stroke-linecap="round"/><path d="M14 4l3 3-3 3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="accordion-copy">
+                <strong>Variables</strong>
+                <span>Dynamic placeholders, quick insert chips, and mapped fields.</span>
+              </div>
+              <div class="accordion-caret">
+                <svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </button>
+            <div class="accordion-body">
+              <div class="search">
+                <svg viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4" stroke-width="1.5"/><path d="M10 10l3 3" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <input placeholder="Search variables..." />
+              </div>
+              <div class="variable-chips">
+                <button class="variable-chip" draggable="true" data-toast="{{fullName}} inserted">{{fullName}}</button>
+                <button class="variable-chip" draggable="true" data-toast="{{issue_date}} inserted">{{issue_date}}</button>
+                <button class="variable-chip" draggable="true" data-toast="{{courseName}} inserted">{{courseName}}</button>
+                <button class="variable-chip" draggable="true" data-toast="{{venue}} inserted">{{venue}}</button>
+              </div>
+              <div class="subsection-label">Drag / Drop Library</div>
+              <div class="drag-pills">
+                <button class="drag-pill" draggable="true" data-toast="Recipient block dragged"><span class="mini-badge">T</span> Recipient name</button>
+                <button class="drag-pill" draggable="true" data-toast="Date block dragged"><span class="mini-badge">D</span> Issue date</button>
+                <button class="drag-pill" draggable="true" data-toast="Verification block dragged"><span class="mini-badge">QR</span> Verification URL</button>
+              </div>
+              <div class="stack-list">
+                <div class="list-row"><div><strong>Certificate fields</strong><span>Name, date, course, trainer, venue</span></div><button class="utility-btn" data-toast="Field map opened">Map fields</button></div>
+                <div class="list-row"><div><strong>Portal linked fields</strong><span>Sync from learner portal or CRM</span></div><button class="utility-btn" data-toast="Portal link setup opened">Link</button></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="tool-module" data-module="dynamic">
+            <button class="accordion-head" data-accordion="dynamic">
+              <div class="accordion-icon">
+                <svg viewBox="0 0 20 20"><path d="M4 10h12M10 4v12" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="6" stroke-width="1.5"/></svg>
+              </div>
+              <div class="accordion-copy">
+                <strong>Dynamic</strong>
+                <span>Linked QR, images, fields, and portal-aware content.</span>
+              </div>
+              <div class="accordion-caret">
+                <svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </button>
+            <div class="accordion-body">
+              <div class="panel-tabs" data-tab-group="dynamicTools">
+                <button class="panel-tab active" data-tab-target="dynamic-fields">Fields</button>
+                <button class="panel-tab" data-tab-target="dynamic-qr">Dynamic QR</button>
+                <button class="panel-tab" data-tab-target="dynamic-portal">Portal</button>
+              </div>
+              <div class="panel-pane active" data-tab-panel="dynamic-fields">
+                <div class="feature-grid">
+                  <button class="tool-card" data-toast="Dynamic image block added"><div class="tool-thumb"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M7 15l3-3 3 2 4-5" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="tool-meta"><strong>Dynamic Image</strong><span>Per-recipient photo or avatar.</span></div></button>
+                  <button class="tool-card" data-toast="Dynamic text field added"><div class="tool-thumb"><svg viewBox="0 0 24 24"><path d="M6 8h12M6 12h8M6 16h12" stroke-linecap="round"/></svg></div><div class="tool-meta"><strong>Dynamic Field</strong><span>Bound text from data source.</span></div></button>
+                </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="dynamic-qr">
+                <div class="stack-list">
+                  <div class="list-row"><div><strong>Verification QR</strong><span>Auto-build per certificate ID</span></div><button class="utility-btn" data-toast="Verification QR inserted">Insert</button></div>
+                  <div class="list-row"><div><strong>Portal access QR</strong><span>Deep link to learner portal</span></div><button class="utility-btn" data-toast="Portal QR inserted">Insert</button></div>
+                </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="dynamic-portal">
+                <div class="stack-list">
+                  <div class="list-row"><div><strong>Portal linking</strong><span>Connect certificate objects to user records</span></div><button class="utility-btn" data-toast="Portal linking opened">Connect</button></div>
+                  <div class="list-row"><div><strong>Certificate-linked content</strong><span>Bind completion score, badge, and issue log</span></div><button class="utility-btn" data-toast="Linked content configured">Configure</button></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="tool-module" data-module="qrstudio">
+            <button class="accordion-head" data-accordion="qrstudio">
+              <div class="accordion-icon">
+                <svg viewBox="0 0 20 20"><rect x="4" y="4" width="12" height="12" rx="2"/><rect x="7" y="7" width="2.4" height="2.4" fill="currentColor" stroke="none"/><rect x="11" y="7" width="2.4" height="2.4" fill="currentColor" stroke="none"/><rect x="7" y="11" width="2.4" height="2.4" fill="currentColor" stroke="none"/></svg>
+              </div>
+              <div class="accordion-copy">
+                <strong>QR Generator</strong>
+                <span>Create verification blocks with styling and live preview.</span>
+              </div>
+              <div class="accordion-caret">
+                <svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </button>
+            <div class="accordion-body">
+              <div class="field">
+                <label>Custom URL</label>
+                <input class="input" placeholder="https://verify.example.com/certificate/123" />
+              </div>
+              <div class="panel-tabs" data-tab-group="qrStyles">
+                <button class="panel-tab active" data-tab-target="qr-style-classic">Classic</button>
+                <button class="panel-tab" data-tab-target="qr-style-rounded">Rounded</button>
+                <button class="panel-tab" data-tab-target="qr-style-branded">Branded</button>
+              </div>
+              <div class="qr-preview">
+                <div class="qr-box">
+                  <div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell"></div>
+                  <div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div>
+                  <div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell"></div>
+                  <div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell blank"></div>
+                  <div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div>
+                  <div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell"></div>
+                  <div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell"></div>
+                </div>
+                <div>
+                  <strong style="display:block;font-size:var(--font-sm)">Verification Preview</strong>
+                  <span style="display:block;margin-top:4px;font-size:var(--font-xs);color:var(--text-3)">Classic style with certificate-safe contrast.</span>
+                </div>
+              </div>
+              <div class="utility-row">
+                <button class="secondary-btn" data-toast="Verification block inserted">Insert block</button>
+                <button class="secondary-btn" data-toast="QR style editor opened">Style QR</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="tool-module" data-module="signatures">
+            <button class="accordion-head" data-accordion="signatures">
+              <div class="accordion-icon">
+                <svg viewBox="0 0 20 20"><path d="M4 14c3-4 5-6 7-6 2 0 2 3 4 3 1 0 2-.8 3-2" stroke-width="1.5" stroke-linecap="round"/><path d="M4 17h12" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div class="accordion-copy">
+                <strong>Signatures</strong>
+                <span>Upload, draw, reuse, and apply signature presets.</span>
+              </div>
+              <div class="accordion-caret">
+                <svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </button>
+            <div class="accordion-body">
+              <div class="panel-tabs" data-tab-group="signatureTools">
+                <button class="panel-tab active" data-tab-target="signature-upload">Upload</button>
+                <button class="panel-tab" data-tab-target="signature-draw">Draw</button>
+                <button class="panel-tab" data-tab-target="signature-saved">Saved</button>
+              </div>
+              <div class="panel-pane active" data-tab-panel="signature-upload">
+                <div class="upload-box">
+                  <p>Upload transparent PNG or SVG signatures for instructors and approvers.</p>
+                  <div class="upload-actions">
+                    <button class="secondary-btn" data-toast="Signature upload opened">Upload signature</button>
+                  </div>
+                </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="signature-draw">
+                <div class="draw-pad">Signature drawing area</div>
+                <div class="utility-row">
+                  <button class="secondary-btn" data-toast="Signature canvas cleared">Clear</button>
+                  <button class="secondary-btn" data-toast="Signature saved">Save signature</button>
+                </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="signature-saved">
+                <div class="signature-grid">
+                  <button class="signature-card" data-toast="Trainer signature applied"><strong>Trainer Signature</strong><span>Saved preset • transparent</span></button>
+                  <button class="signature-card" data-toast="Director signature applied"><strong>Director Signature</strong><span>Saved preset • dark ink</span></button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="tool-module" data-module="brand">
+            <button class="accordion-head" data-accordion="brand">
+              <div class="accordion-icon">
+                <svg viewBox="0 0 20 20"><path d="M4 6h12v8H4z" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 10h6" stroke-width="1.5" stroke-linecap="round"/></svg>
+              </div>
+              <div class="accordion-copy">
+                <strong>Brand</strong>
+                <span>Brand kit, reusable styles, logos, fonts, and color tokens.</span>
+              </div>
+              <div class="accordion-caret">
+                <svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </button>
+            <div class="accordion-body">
+              <div class="panel-tabs" data-tab-group="brandTools">
+                <button class="panel-tab active" data-tab-target="brand-library">Library</button>
+                <button class="panel-tab" data-tab-target="brand-styles">Styles</button>
+                <button class="panel-tab" data-tab-target="brand-assets">Assets</button>
+              </div>
+              <div class="panel-pane active" data-tab-panel="brand-library">
+                <div class="list-row"><div><strong>Example Brand</strong><span>Organization-level branding preset</span></div><button class="utility-btn" data-toast="Brand manager opened">Manage</button></div>
+                <div class="brand-logo-row">
+                  <div class="logo-tile">Primary Logo</div>
+                  <div class="logo-tile">Seal</div>
+                  <div class="logo-tile">Mono Mark</div>
+                </div>
+                <div class="brand-swatch-row">
+                  <span class="brand-swatch" style="background:#4c3420"></span>
+                  <span class="brand-swatch" style="background:#9dd86f"></span>
+                  <span class="brand-swatch" style="background:#ffd76a"></span>
+                  <span class="brand-swatch" style="background:#eefbff"></span>
+                </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="brand-styles">
+                <div class="style-stack">
+                  <div class="style-row"><div><strong>Heading 1</strong><span>Poppins Bold · 64px</span></div><button class="utility-btn" data-toast="Heading 1 applied">Apply</button></div>
+                  <div class="style-row"><div><strong>Heading 2</strong><span>Poppins SemiBold · 36px</span></div><button class="utility-btn" data-toast="Heading 2 applied">Apply</button></div>
+                  <div class="style-row"><div><strong>Body</strong><span>Poppins Regular · 16px</span></div><button class="utility-btn" data-toast="Body style applied">Apply</button></div>
+                </div>
+                <div class="font-preset-row">
+                  <button class="font-preset" data-toast="Poppins preset applied">Poppins Suite</button>
+                  <button class="font-preset" data-toast="Merriweather preset applied">Merriweather Suite</button>
+                </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="brand-assets">
+                <div class="stack-list">
+                  <div class="list-row"><div><strong>Logos</strong><span>Brand-approved logo variants</span></div><button class="utility-btn" data-toast="Logo library opened">Open</button></div>
+                  <div class="list-row"><div><strong>Reusable styles</strong><span>Shared type and decoration presets</span></div><button class="utility-btn" data-toast="Reusable styles opened">Open</button></div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="tool-module" data-module="smart">
+            <button class="accordion-head" data-accordion="smart">
+              <div class="accordion-icon">
+                <svg viewBox="0 0 20 20"><path d="M10 3c-1 2-3 3-5 3 0 5 2 8 5 10 2-1.2 5-4.2 5-10-2 0-4-1-5-3z" stroke-width="1.4" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="accordion-copy">
+                <strong>AI Designer</strong>
+                <span>Quick and professional generation workflows with theme and layout guidance.</span>
+              </div>
+              <div class="accordion-caret">
+                <svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </button>
+            <div class="accordion-body">
+              <div class="ai-mode-switch" data-tab-group="aiModes">
+                <button class="panel-tab active" data-tab-target="ai-quick">Quick</button>
+                <button class="panel-tab" data-tab-target="ai-professional">Professional</button>
+              </div>
+              <div class="panel-pane active" data-tab-panel="ai-quick">
+                <div class="ai-step-list">
+                  <div class="ai-step">
+                    <strong>1. Start from outcome</strong>
+                    <span>Choose a certificate type and tone, then let AI build the first composition.</span>
+                  </div>
+                  <div class="field">
+                    <label>Certificate type</label>
+                    <select class="select">
+                      <option>Completion</option>
+                      <option>Achievement</option>
+                      <option>Participation</option>
+                      <option>Appreciation</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>Quick prompt</label>
+                    <textarea class="textarea" placeholder="Modern bootcamp certificate with soft academic background and clear verification block."></textarea>
+                  </div>
+                  <div class="theme-grid">
+                    <button class="theme-btn on">Academic</button>
+                    <button class="theme-btn">Professional</button>
+                    <button class="theme-btn">Minimal</button>
+                    <button class="theme-btn">Creative</button>
+                  </div>
+                </div>
+              </div>
+              <div class="panel-pane" data-tab-panel="ai-professional">
+                <div class="ai-step-list">
+                  <div class="field">
+                    <label>Step 1: Certificate type</label>
+                    <select class="select">
+                      <option>Completion</option>
+                      <option>Achievement</option>
+                      <option>Participation</option>
+                      <option>Appreciation</option>
+                      <option>Graduation</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>Step 2: Purpose</label>
+                    <input class="input" placeholder="To certify completion of the program" />
+                  </div>
+                  <div class="field">
+                    <label>Step 3: Event name</label>
+                    <input class="input" placeholder="e.g. Winter Commencement 2024" />
+                  </div>
+                  <div class="field">
+                    <label>Step 4: Custom prompt</label>
+                    <textarea class="textarea" placeholder="Use a premium layout with verification, subtle award cues, and clean hierarchy."></textarea>
+                  </div>
+                  <div class="field">
+                    <label>Step 5: Theme</label>
+                    <div class="theme-grid">
+                      <button class="theme-btn">Professional</button>
+                      <button class="theme-btn">Minimal</button>
+                      <button class="theme-btn">Elegant</button>
+                      <button class="theme-btn">Modern</button>
+                      <button class="theme-btn">Creative</button>
+                      <button class="theme-btn on">Academic</button>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label>Step 6: Background generation</label>
+                    <div class="upload-box">
+                      <p>Upload references or generate a certificate-safe background concept.</p>
+                      <div class="upload-actions">
+                        <button class="secondary-btn" data-toast="Background upload opened">Upload</button>
+                        <button class="secondary-btn" data-toast="AI background suggestions opened">Generate</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label>Step 7: Brand or custom colors</label>
+                    <select class="select">
+                      <option>Example Brand</option>
+                      <option>Use current canvas colors</option>
+                      <option>Create new palette</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <button class="primary-btn" id="generateTemplateBtn" style="width:100%">Generate professional template</button>
+              </div>
+            </div>
+          </section>
+          <section class="tool-module" data-module="layers">
+            <button class="accordion-head" data-accordion="layers">
+              <div class="accordion-icon">
+                <svg viewBox="0 0 20 20"><path d="M10 3l7 4-7 4-7-4 7-4zM3 10l7 4 7-4M3 13l7 4 7-4" stroke-width="1.4" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="accordion-copy">
+                <strong>Layers</strong>
+                <span>Arrange, select, and inspect objects precisely.</span>
+              </div>
+              <div class="accordion-caret">
+                <svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </button>
+            <div class="accordion-body">
+              <div class="utility-row">
+                <button class="utility-btn" id="arrangeFrontBtn">To front</button>
+                <button class="utility-btn" id="arrangeBackBtn">To back</button>
+                <button class="utility-btn" id="duplicateQuickBtn">Duplicate</button>
+              </div>
+              <div class="layer-list" id="layerList"></div>
+            </div>
+          </section>
+        </div>
+        </div>
+      </aside>
+
+      <main class="canvas-shell">
+        <div class="context-strip">
+          <div class="context-summary" id="contextSummary">No object selected</div>
+          <div class="context-actions">
+            <div class="tool-group">
+              <button class="ghost-btn" id="alignLeftBtn" title="Align left">
+                <svg viewBox="0 0 16 16"><path d="M3 4h10M3 8h7M3 12h10" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="tool-label">Align left</span>
+                <span class="tool-kbd">A</span>
+              </button>
+              <button class="ghost-btn" id="alignCenterBtn" title="Align center">
+                <svg viewBox="0 0 16 16"><path d="M3 4h10M5 8h6M3 12h10" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="tool-label">Align center</span>
+                <span class="tool-kbd">C</span>
+              </button>
+              <button class="ghost-btn" id="alignRightBtn" title="Align right">
+                <svg viewBox="0 0 16 16"><path d="M3 4h10M6 8h7M3 12h10" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="tool-label">Align right</span>
+                <span class="tool-kbd">R</span>
+              </button>
+              <div class="tool-separator"></div>
+              <button class="ghost-btn" id="distributeHorizontalBtn" title="Distribute horizontally">
+                <svg viewBox="0 0 16 16"><path d="M2 4v8M14 4v8M5 6h2v4H5zM9 6h2v4H9z" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="tool-label">Distribute H</span>
+                <span class="tool-kbd">Shift H</span>
+              </button>
+              <button class="ghost-btn" id="distributeVerticalBtn" title="Distribute vertically">
+                <svg viewBox="0 0 16 16"><path d="M4 2h8M4 14h8M6 5h4v2H6zM6 9h4v2H6z" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="tool-label">Distribute V</span>
+                <span class="tool-kbd">Shift V</span>
+              </button>
+            </div>
+            <div class="tool-group">
+              <button class="ghost-btn" id="bringForwardBtn" title="Bring forward">
+                <svg viewBox="0 0 16 16"><path d="M6 10l2-2 2 2M8 8V3M4 13h8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="tool-label">Forward</span>
+                <span class="tool-kbd">Ctrl ]</span>
+              </button>
+              <button class="ghost-btn" id="sendBackwardBtn" title="Send backward">
+                <svg viewBox="0 0 16 16"><path d="M6 6l2 2 2-2M8 8v5M4 3h8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="tool-label">Backward</span>
+                <span class="tool-kbd">Ctrl [</span>
+              </button>
+              <button class="ghost-btn" id="bringToFrontBtn" title="Bring to front">
+                <svg viewBox="0 0 16 16"><path d="M8 3v8M5 6l3-3 3 3M3 13h10" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="tool-label">To front</span>
+                <span class="tool-kbd">Shift ]</span>
+              </button>
+              <button class="ghost-btn" id="sendToBackBtn" title="Send to back">
+                <svg viewBox="0 0 16 16"><path d="M8 13V5M5 10l3 3 3-3M3 3h10" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="tool-label">To back</span>
+                <span class="tool-kbd">Shift [</span>
+              </button>
+            </div>
+            <div class="tool-group">
+              <button class="ghost-btn" id="duplicateBtn" title="Duplicate">
+                <svg viewBox="0 0 16 16"><rect x="5" y="5" width="7" height="7" rx="1.5"/><path d="M3.5 10V4.8A1.3 1.3 0 0 1 4.8 3.5H10" stroke-width="1.3" stroke-linecap="round"/></svg>
+                <span class="tool-label">Duplicate</span>
+                <span class="tool-kbd">Ctrl D</span>
+              </button>
+              <button class="ghost-btn" id="deleteBtn" title="Delete">
+                <svg viewBox="0 0 16 16"><path d="M3.5 4.5h9M6 4.5V3.2h4v1.3M5 6.5v5M8 6.5v5M11 6.5v5M4.5 4.5l.6 8.2c.05.7.63 1.3 1.34 1.3h3.99c.71 0 1.29-.55 1.34-1.26l.67-8.24" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="tool-label">Delete</span>
+                <span class="tool-kbd">Del</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="canvas-scroller" id="canvasScroll">
+          <div class="canvas-empty-note" role="note">Select an object to edit it. Otherwise the canvas stays distraction-free.</div>
+          <div class="canvas-inner">
+            <div class="ruler-frame">
+              <div class="ruler-corner"></div>
+              <div class="ruler ruler-top" aria-hidden="true">
+                <span class="ruler-label" style="left:0%">0</span>
+                <span class="ruler-label" style="left:9.1%">100</span>
+                <span class="ruler-label" style="left:18.2%">200</span>
+                <span class="ruler-label" style="left:27.3%">300</span>
+                <span class="ruler-label" style="left:36.4%">400</span>
+                <span class="ruler-label" style="left:45.5%">500</span>
+                <span class="ruler-label" style="left:54.6%">600</span>
+                <span class="ruler-label" style="left:63.7%">700</span>
+                <span class="ruler-label" style="left:72.8%">800</span>
+                <span class="ruler-label" style="left:81.9%">900</span>
+                <span class="ruler-label" style="left:91%">1000</span>
+              </div>
+              <div class="ruler ruler-left" aria-hidden="true">
+                <span class="ruler-label" style="top:0%">0</span>
+                <span class="ruler-label" style="top:13.1%">100</span>
+                <span class="ruler-label" style="top:26.2%">200</span>
+                <span class="ruler-label" style="top:39.3%">300</span>
+                <span class="ruler-label" style="top:52.4%">400</span>
+                <span class="ruler-label" style="top:65.5%">500</span>
+                <span class="ruler-label" style="top:78.6%">600</span>
+                <span class="ruler-label" style="top:91.7%">700</span>
+              </div>
+              <div class="cert-stage">
+                <div class="cert" id="certEl">
+                <div class="cert-sky">
+                  <div class="cloud c1"></div>
+                  <div class="cloud c2"></div>
+                  <div class="cloud c3"></div>
+                  <div class="cloud c4"></div>
+                </div>
+
+                <div class="design-object object-text" data-object-type="text" data-object-name="Certificate heading" style="left:120px;top:86px;width:760px;">
+                  <div class="cert-kicker">CERTIFICATE OF</div>
+                  <div class="cert-title">CERTIFICATE OF</div>
+                  <div class="cert-subtitle">BOOTCAMPCAMP</div>
+                  <div class="cert-copy">This is to proudly certify that</div>
+                </div>
+
+                <div class="design-object object-text" data-object-type="text" data-object-name="Recipient name" style="left:220px;top:332px;width:560px;">
+                  <div class="cert-name">{{fullName}}</div>
+                </div>
+
+                <div class="design-object object-text" data-object-type="text" data-object-name="Certificate details" style="left:210px;top:438px;width:580px;">
+                  <div class="cert-detail">has successfully completed the "[Bootcamp Name]"<br />conducted at [Venue / Platform Name]</div>
+                </div>
+
+                <div class="design-object object-shape" data-object-type="shape" data-object-name="Verification block" style="left:72px;bottom:62px;width:132px;height:150px;">
+                  <div>
+                    <div class="qr-box">
+                      <div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell"></div>
+                      <div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div>
+                      <div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell"></div>
+                      <div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell blank"></div>
+                      <div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div>
+                      <div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell"></div>
+                      <div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell blank"></div><div class="qr-cell"></div><div class="qr-cell"></div><div class="qr-cell"></div>
+                    </div>
+                    <div class="qr-copy">Scan to verify</div>
+                  </div>
+                </div>
+
+                <div class="design-object object-text" data-object-type="text" data-object-name="Issue date" style="left:288px;bottom:102px;width:168px;">
+                  <div class="footer-meta">
+                    <strong>{{issue_date}}</strong>
+                    <span>Date of Issue</span>
+                  </div>
+                </div>
+
+                <div class="design-object object-text" data-object-type="text" data-object-name="Signature block" style="left:488px;bottom:90px;width:210px;">
+                  <div class="signature">
+                    <div class="signature-line"></div>
+                    <strong>Instructor / Trainer</strong>
+                    <span>signature</span>
+                  </div>
+                </div>
+
+                <div class="design-object object-image" data-object-type="image" data-object-name="Camp illustration" style="right:44px;bottom:18px;width:240px;height:250px;">
+                  <div class="camp">
+                    <div class="tree t1"></div>
+                    <div class="tree t2"></div>
+                    <div class="tree t3"></div>
+                    <div class="tent"></div>
+                    <div class="camper"></div>
+                    <div class="campfire"></div>
+                  </div>
+                </div>
+
+                <div class="design-object object-shape" data-object-type="shape" data-object-name="Ground shape" style="left:0;right:0;bottom:0;height:64px;">
+                  <div class="grass"></div>
+                </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <aside class="inspector" id="inspector">
+        <div class="inspector-head">
+          <div>
+            <strong id="inspectorTitle">Canvas</strong>
+            <span id="inspectorSubtitle">Canvas, page, and export settings.</span>
+          </div>
+          <button class="icon-btn" id="inspectorClose" title="Close inspector">
+            <svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="inspector-body">
+          <div class="inspector-mode active" id="modeCanvas">
+            <section class="inspect-accordion open">
+              <button class="inspect-head"><span>Canvas settings</span><svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="inspect-body">
+                <div class="inspect-row"><label>Size</label><select class="mini-select"><option>A4 Landscape</option><option>A4 Portrait</option></select></div>
+                <div class="inspect-row"><label>Background</label><div class="color-row"><button class="color-button color-trigger" id="pageColorTrigger" data-color="#EEFBFF" style="background:#eefbff"></button><input class="mini-input" id="pageColorValue" value="#EEFBFF" /></div></div>
+                <div class="inspect-row"><label>Show rulers</label><button class="switch" id="rulerToggle" aria-label="Toggle rulers"></button></div>
+              </div>
+            </section>
+            <section class="inspect-accordion open">
+              <button class="inspect-head"><span>Page settings</span><svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="inspect-body">
+                <div class="inspect-row"><label>Margins</label><input class="mini-input" value="20 px" /></div>
+                <div class="inspect-row"><label>Bleed</label><input class="mini-input" value="Off" /></div>
+              </div>
+            </section>
+            <section class="inspect-accordion open">
+              <button class="inspect-head"><span>Export settings</span><svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="inspect-body">
+                <div class="inspect-row"><label>Format</label><select class="mini-select"><option>PNG</option><option>PDF</option></select></div>
+                <div class="inspect-row"><label>Quality</label><select class="mini-select"><option>High (300 DPI)</option><option>Standard</option></select></div>
+              </div>
+            </section>
+          </div>
+
+          <div class="inspector-mode" id="modeText">
+            <section class="inspect-accordion open">
+              <button class="inspect-head"><span>Typography</span><svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="inspect-body">
+                <div class="inspect-row"><label>Font</label><select class="mini-select"><option>Poppins Bold</option><option>Inter Semibold</option></select></div>
+                <div class="inspect-row"><label>Size</label><input class="mini-input" value="60 px" /></div>
+                <div class="inspect-row"><label>Weight</label><select class="mini-select"><option>700</option><option>800</option></select></div>
+              </div>
+            </section>
+            <section class="inspect-accordion open">
+              <button class="inspect-head"><span>Alignment</span><svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="inspect-body">
+                <div class="inspect-row"><label>Horizontal</label><select class="mini-select"><option>Center</option><option>Left</option><option>Right</option></select></div>
+                <div class="inspect-row"><label>Transform</label><select class="mini-select"><option>None</option><option>Uppercase</option></select></div>
+              </div>
+            </section>
+            <section class="inspect-accordion open">
+              <button class="inspect-head"><span>Color</span><svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="inspect-body">
+                <div class="inspect-row"><label>Text color</label><div class="color-row"><button class="color-button color-trigger" id="textColorTrigger" data-color="#4C3420" style="background:#4c3420"></button><input class="mini-input" id="textColorValue" value="#4C3420" /></div></div>
+              </div>
+            </section>
+            <section class="inspect-accordion">
+              <button class="inspect-head"><span>Spacing</span><svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="inspect-body">
+                <div class="inspect-row"><label>Letter spacing</label><input class="mini-input" value="0.02 em" /></div>
+                <div class="inspect-row"><label>Line height</label><input class="mini-input" value="1.2" /></div>
+              </div>
+            </section>
+            <section class="inspect-accordion">
+              <button class="inspect-head"><span>Effects</span><svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="inspect-body">
+                <div class="inspect-row"><label>Shadow</label><select class="mini-select"><option>None</option><option>Soft</option></select></div>
+              </div>
+            </section>
+          </div>
+
+          <div class="inspector-mode" id="modeImage">
+            <section class="inspect-accordion open">
+              <button class="inspect-head"><span>Image</span><svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="inspect-body">
+                <div class="inspect-row"><label>Crop</label><button class="secondary-btn" data-toast="Crop mode opened">Open crop</button></div>
+                <div class="inspect-row"><label>Replace</label><button class="secondary-btn" data-toast="Replace image flow opened">Replace</button></div>
+                <div class="inspect-row"><label>Opacity</label><input class="mini-input" value="100%" /></div>
+                <div class="inspect-row"><label>Border radius</label><input class="mini-input" value="0 px" /></div>
+                <div class="inspect-row"><label>Filters</label><select class="mini-select"><option>Original</option><option>Warm</option><option>Cool</option></select></div>
+              </div>
+            </section>
+          </div>
+
+          <div class="inspector-mode" id="modeShape">
+            <section class="inspect-accordion open">
+              <button class="inspect-head"><span>Shape</span><svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="inspect-body">
+                <div class="inspect-row"><label>Fill</label><div class="color-row"><button class="color-button color-trigger" id="shapeColorTrigger" data-color="#9DD86F" style="background:#9dd86f"></button><input class="mini-input" id="shapeColorValue" value="#9DD86F" /></div></div>
+                <div class="inspect-row"><label>Stroke</label><input class="mini-input" value="0 px" /></div>
+                <div class="inspect-row"><label>Shadows</label><select class="mini-select"><option>None</option><option>Soft</option></select></div>
+                <div class="inspect-row"><label>Sizing</label><input class="mini-input" value="100%" /></div>
+              </div>
+            </section>
+          </div>
+
+          <div class="inspector-mode" id="modeMulti">
+            <section class="inspect-accordion open">
+              <button class="inspect-head"><span>Multi-select</span><svg viewBox="0 0 16 16"><path d="M4 6l4 4 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+              <div class="inspect-body">
+                <div class="inspect-row"><label>Selection</label><input class="mini-input" id="multiSelectionCount" value="2 objects" /></div>
+                <div class="inspect-row"><label>Align</label><select class="mini-select"><option>Use top controls</option></select></div>
+                <div class="inspect-row"><label>Distribute</label><select class="mini-select"><option>Horizontal</option><option>Vertical</option></select></div>
+                <div class="inspect-row"><label>Arrange</label><select class="mini-select"><option>Preserve order</option></select></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="bottombar">
+      <div class="bottom-group">
+        <div class="bottom-pill"><strong id="zoomBottom">100%</strong> zoom</div>
+        <div class="bottom-pill"><strong>1</strong> page</div>
+      </div>
+      <div class="bottom-group shortcut-copy">
+        <span>Shortcuts: Ctrl + D duplicate, Delete remove, Ctrl + [ / ] layer, Arrows nudge, Esc clear</span>
+      </div>
+      <div class="bottom-group">
+        <div class="bottom-pill"><span class="status-dot"></span><span id="statusText">Canvas ready</span></div>
+      </div>
+    </footer>
+  </div>
+
+  <div class="color-popover" id="colorPopover">
+    <div class="picker-sv" id="pickerSv">
+      <div class="picker-handle" id="pickerHandle"></div>
+    </div>
+    <div class="picker-bar">
+      <label>H</label>
+      <input class="range hue-range" id="hueRange" type="range" min="0" max="360" value="197" />
+    </div>
+    <div class="picker-bar">
+      <label>A</label>
+      <input class="range alpha-range" id="alphaRange" type="range" min="0" max="100" value="100" />
+    </div>
+    <div class="picker-meta">
+      <select>
+        <option>Hex</option>
+      </select>
+      <input id="pickerHex" value="#EEFBFF" />
+      <div class="picker-alpha" id="pickerAlphaValue">100%</div>
+    </div>
+    <div class="picker-swatches">
+      <button class="picker-swatch" data-color="#EEFBFF" style="background:#eefbff"></button>
+      <button class="picker-swatch" data-color="#DFF2FF" style="background:#dff2ff"></button>
+      <button class="picker-swatch" data-color="#D8F1FF" style="background:#d8f1ff"></button>
+      <button class="picker-swatch" data-color="#EDF7FF" style="background:#edf7ff"></button>
+      <button class="picker-swatch" data-color="#F8FBFF" style="background:#f8fbff"></button>
+      <button class="picker-swatch" data-color="#FFD76A" style="background:#ffd76a"></button>
+      <button class="picker-swatch" data-color="#9DD86F" style="background:#9dd86f"></button>
+      <button class="picker-swatch" data-color="#4C3420" style="background:#4c3420"></button>
+      <button class="picker-swatch" data-color="#635BFF" style="background:#635bff"></button>
+      <button class="picker-swatch" data-color="#0F172A" style="background:#0f172a"></button>
+      <button class="picker-swatch" data-color="#FFFFFF" style="background:#ffffff"></button>
+      <button class="picker-swatch" data-color="#E2E8F0" style="background:#e2e8f0"></button>
+      <button class="picker-swatch" data-color="#C5E8F8" style="background:#c5e8f8"></button>
+      <button class="picker-swatch" data-color="#FDE68A" style="background:#fde68a"></button>
+      <button class="picker-swatch" data-color="#BBF7D0" style="background:#bbf7d0"></button>
+      <button class="picker-swatch" data-color="#FECACA" style="background:#fecaca"></button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const app = document.getElementById("app");
+    const cert = document.getElementById("certEl");
+    const rulerFrame = document.querySelector(".ruler-frame");
+    const canvasScroll = document.getElementById("canvasScroll");
+    const toolpanel = document.getElementById("toolpanel");
+    const toolpanelBody = document.getElementById("toolpanelBody");
+    const toolpanelTitle = document.getElementById("toolpanelTitle");
+    const toolpanelDesc = document.getElementById("toolpanelDesc");
+    const toolNavButtons = Array.from(document.querySelectorAll(".toolnav-btn"));
+    const toolModules = Array.from(document.querySelectorAll(".tool-module"));
+    const toast = document.getElementById("toast");
+    const zoomTop = document.getElementById("zoomTop");
+    const zoomBottom = document.getElementById("zoomBottom");
+    const statusText = document.getElementById("statusText");
+    const contextStrip = document.querySelector(".context-strip");
+    const contextSummary = document.getElementById("contextSummary");
+    const colorPopover = document.getElementById("colorPopover");
+    const pickerSv = document.getElementById("pickerSv");
+    const pickerHandle = document.getElementById("pickerHandle");
+    const hueRange = document.getElementById("hueRange");
+    const alphaRange = document.getElementById("alphaRange");
+    const pickerHex = document.getElementById("pickerHex");
+    const pickerAlphaValue = document.getElementById("pickerAlphaValue");
+    const inspectorTitle = document.getElementById("inspectorTitle");
+    const inspectorSubtitle = document.getElementById("inspectorSubtitle");
+    const modeCanvas = document.getElementById("modeCanvas");
+    const modeText = document.getElementById("modeText");
+    const modeImage = document.getElementById("modeImage");
+    const modeShape = document.getElementById("modeShape");
+    const modeMulti = document.getElementById("modeMulti");
+    const multiSelectionCount = document.getElementById("multiSelectionCount");
+    const pageColorTrigger = document.getElementById("pageColorTrigger");
+    const pageColorValue = document.getElementById("pageColorValue");
+    const rulerToggle = document.getElementById("rulerToggle");
+    const textColorTrigger = document.getElementById("textColorTrigger");
+    const textColorValue = document.getElementById("textColorValue");
+    const shapeColorTrigger = document.getElementById("shapeColorTrigger");
+    const shapeColorValue = document.getElementById("shapeColorValue");
+    const layerList = document.getElementById("layerList");
+    const alignLeftBtn = document.getElementById("alignLeftBtn");
+    const alignCenterBtn = document.getElementById("alignCenterBtn");
+    const alignRightBtn = document.getElementById("alignRightBtn");
+    const distributeHorizontalBtn = document.getElementById("distributeHorizontalBtn");
+    const distributeVerticalBtn = document.getElementById("distributeVerticalBtn");
+    const bringForwardBtn = document.getElementById("bringForwardBtn");
+    const sendBackwardBtn = document.getElementById("sendBackwardBtn");
+    const bringToFrontBtn = document.getElementById("bringToFrontBtn");
+    const sendToBackBtn = document.getElementById("sendToBackBtn");
+    const duplicateBtn = document.getElementById("duplicateBtn");
+    const deleteBtn = document.getElementById("deleteBtn");
+    const arrangeFrontBtn = document.getElementById("arrangeFrontBtn");
+    const arrangeBackBtn = document.getElementById("arrangeBackBtn");
+    const duplicateQuickBtn = document.getElementById("duplicateQuickBtn");
+    const designObjects = Array.from(document.querySelectorAll(".design-object"));
+    let zoom = 100;
+    let toastTimer = null;
+    let activeColorTarget = null;
+    let pickerState = { h: 197, s: 0.07, v: 1, a: 1 };
+    let selectedObjects = [];
+    let objectCounter = designObjects.length;
+    let busyTimer = null;
+    let activeTool = "templates";
+    const toolScrollPositions = {};
+
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.style.display = "block";
+      toastTimer = setTimeout(() => {
+        toast.style.display = "none";
+      }, 1800);
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function normalizeHex(value, fallback) {
+      const raw = (value || "").trim().replace(/^#/, "");
+      if (/^[0-9a-fA-F]{6}$/.test(raw)) {
+      return "#" + raw.toUpperCase();
+      }
+      return fallback;
+    }
+
+    function setButtonLoading(button, loading) {
+      if (!button) return;
+      button.classList.toggle("is-loading", loading);
+      button.setAttribute("aria-busy", loading ? "true" : "false");
+      if (loading) {
+        button.dataset.prevDisabled = button.disabled ? "true" : "false";
+        button.disabled = true;
+      } else if (button.dataset.prevDisabled !== "true") {
+        button.disabled = false;
+      }
+    }
+
+    function runAsyncFeedback(button, message, delay = 650) {
+      clearTimeout(busyTimer);
+      setButtonLoading(button, true);
+      busyTimer = setTimeout(() => {
+        setButtonLoading(button, false);
+        showToast(message);
+      }, delay);
+    }
+
+    function getToolMeta(name) {
+      const button = toolNavButtons.find((item) => item.dataset.tool === name);
+      const module = toolModules.find((item) => item.dataset.module === name);
+      const title = module?.querySelector(".accordion-copy strong")?.textContent || button?.querySelector("span")?.textContent || "Workspace";
+      const desc = module?.querySelector(".accordion-copy span")?.textContent || "";
+      return { title, desc };
+    }
+
+    function openTool(name, preserveScroll = true) {
+      if (activeTool && preserveScroll) {
+        toolScrollPositions[activeTool] = toolpanelBody.scrollTop;
+      }
+      activeTool = name;
+      const meta = getToolMeta(name);
+      toolpanelTitle.textContent = meta.title;
+      toolpanelDesc.textContent = meta.desc;
+      toolNavButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.tool === name);
+        button.setAttribute("aria-pressed", button.dataset.tool === name ? "true" : "false");
+      });
+      toolModules.forEach((section) => {
+        section.classList.toggle("active", section.dataset.module === name);
+      });
+      app.classList.remove("toolpanel-closed");
+      requestAnimationFrame(() => {
+        toolpanelBody.scrollTop = toolScrollPositions[name] || 0;
+      });
+    }
+
+    function closeToolPanel() {
+      if (activeTool) {
+        toolScrollPositions[activeTool] = toolpanelBody.scrollTop;
+      }
+      app.classList.add("toolpanel-closed");
+    }
+
+    function toggleToolPanel() {
+      if (app.classList.contains("toolpanel-closed")) {
+        openTool(activeTool || "templates", false);
+      } else {
+        closeToolPanel();
+      }
+    }
+
+    function syncAccordionHeight(section) {
+      if (!section) return;
+      const body = section.querySelector(".accordion-body");
+      if (!body) return;
+      if (!section.classList.contains("open")) {
+        body.style.maxHeight = "0px";
+        return;
+      }
+      body.style.maxHeight = body.scrollHeight + "px";
+    }
+
+    function syncAllAccordionHeights() {
+      document.querySelectorAll(".accordion").forEach(syncAccordionHeight);
+    }
+
+    function normalizeObject(node) {
+      const left = node.offsetLeft;
+      const top = node.offsetTop;
+      const width = node.offsetWidth;
+      const height = node.offsetHeight;
+      node.style.left = left + "px";
+      node.style.top = top + "px";
+      node.style.width = width + "px";
+      node.style.height = height + "px";
+      node.style.right = "auto";
+      node.style.bottom = "auto";
+      if (!node.dataset.objectId) {
+        objectCounter += 1;
+        node.dataset.objectId = "object-" + objectCounter;
+      }
+      if (!node.dataset.z) {
+        node.dataset.z = String(parseInt(window.getComputedStyle(node).zIndex, 10) || 2);
+        node.style.zIndex = node.dataset.z;
+      }
+      node.tabIndex = 0;
+      node.setAttribute("role", "button");
+      node.setAttribute("aria-label", node.dataset.objectName + ", " + node.dataset.objectType);
+      node.setAttribute("aria-pressed", "false");
+    }
+
+    function registerObject(node) {
+      normalizeObject(node);
+      node.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const additive = event.ctrlKey || event.metaKey || event.shiftKey;
+        if (additive) {
+          if (selectedObjects.includes(node)) {
+            setSelectionState(selectedObjects.filter((item) => item !== node));
+          } else {
+            setSelectionState([...selectedObjects, node]);
+          }
+          return;
+        }
+        setSelectionState([node]);
+      });
+      node.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          const additive = event.ctrlKey || event.metaKey || event.shiftKey;
+          if (additive) {
+            if (selectedObjects.includes(node)) {
+              setSelectionState(selectedObjects.filter((item) => item !== node));
+            } else {
+              setSelectionState([...selectedObjects, node]);
+            }
+            return;
+          }
+          setSelectionState([node]);
+        }
+      });
+    }
+
+    function setInspectorMode(mode) {
+      [modeCanvas, modeText, modeImage, modeShape, modeMulti].forEach((section) => {
+        section.classList.remove("active");
+      });
+      if (mode === "canvas") {
+        inspectorTitle.textContent = "Canvas";
+        inspectorSubtitle.textContent = "Canvas, page, and export settings.";
+        modeCanvas.classList.add("active");
+      } else if (mode === "text") {
+        inspectorTitle.textContent = "Text";
+        inspectorSubtitle.textContent = "Typography, alignment, and text styling controls.";
+        modeText.classList.add("active");
+      } else if (mode === "image") {
+        inspectorTitle.textContent = "Image";
+        inspectorSubtitle.textContent = "Media replacement, crop, and visual adjustments.";
+        modeImage.classList.add("active");
+      } else if (mode === "shape") {
+        inspectorTitle.textContent = "Shape";
+        inspectorSubtitle.textContent = "Fill, stroke, shadows, and sizing controls.";
+        modeShape.classList.add("active");
+      } else if (mode === "multi") {
+        inspectorTitle.textContent = "Multi-select";
+        inspectorSubtitle.textContent = "Alignment and arrangement for multiple objects.";
+        modeMulti.classList.add("active");
+      }
+    }
+
+    function renderLayerList() {
+      if (!layerList) return;
+      if (!designObjects.length) {
+        layerList.innerHTML = '<div class="empty-card">No layers yet. Add text, shapes, or media to start building the certificate.</div>';
+        return;
+      }
+      const ordered = designObjects.slice().sort((a, b) => getObjectZ(b) - getObjectZ(a));
+      layerList.innerHTML = ordered.map((node) => {
+        const active = selectedObjects.includes(node) ? " active" : "";
+        return '<button class="layer-item' + active + '" data-layer-id="' + node.dataset.objectId + '">' +
+          '<div><strong>' + node.dataset.objectName + '</strong><span>Layer ' + node.dataset.z + '</span></div>' +
+          '<div class="layer-type">' + node.dataset.objectType + '</div>' +
+        '</button>';
+      }).join("");
+    }
+
+    function updateContextState() {
+      const hasSelection = selectedObjects.length > 0;
+      contextStrip.classList.toggle("selection-active", hasSelection);
+      [alignLeftBtn, alignCenterBtn, alignRightBtn, bringForwardBtn, sendBackwardBtn, bringToFrontBtn, sendToBackBtn, duplicateBtn, deleteBtn, arrangeFrontBtn, arrangeBackBtn, duplicateQuickBtn].forEach((button) => {
+        button.disabled = !hasSelection;
+      });
+      [distributeHorizontalBtn, distributeVerticalBtn].forEach((button) => {
+        button.disabled = selectedObjects.length < 2;
+      });
+      if (!hasSelection) {
+        contextSummary.textContent = "No object selected";
+        statusText.textContent = "Canvas settings";
+        multiSelectionCount.value = "0 objects";
+        setInspectorMode("canvas");
+        renderLayerList();
+        return;
+      }
+      if (selectedObjects.length > 1) {
+        contextSummary.textContent = selectedObjects.length + " objects selected";
+        statusText.textContent = "Multi-select active";
+        multiSelectionCount.value = selectedObjects.length + " objects";
+        setInspectorMode("multi");
+        renderLayerList();
+        return;
+      }
+      const active = selectedObjects[0];
+      contextSummary.textContent = active.dataset.objectName;
+      statusText.textContent = active.dataset.objectType + " selected";
+      setInspectorMode(active.dataset.objectType);
+      syncInspectorColors(active);
+      renderLayerList();
+    }
+
+    function syncInspectorColors(active) {
+      if (!active) return;
+      if (active.dataset.objectType === "text") {
+        const textColor = active.dataset.color || "#4C3420";
+        textColorTrigger.dataset.color = textColor;
+        textColorTrigger.style.background = textColor;
+        textColorValue.value = textColor;
+      }
+      if (active.dataset.objectType === "shape") {
+        const shapeColor = active.dataset.color || "#9DD86F";
+        shapeColorTrigger.dataset.color = shapeColor;
+        shapeColorTrigger.style.background = shapeColor;
+        shapeColorValue.value = shapeColor;
+      }
+    }
+
+    function setSelectionState(nextSelection) {
+      selectedObjects = nextSelection;
+      designObjects.forEach((node) => {
+        node.classList.remove("selected", "multi");
+        node.setAttribute("aria-pressed", "false");
+      });
+      selectedObjects.forEach((node) => {
+        node.classList.add("selected");
+        node.setAttribute("aria-pressed", "true");
+        if (selectedObjects.length > 1) {
+          node.classList.add("multi");
+        }
+      });
+      app.classList.add("inspector-open");
+      updateContextState();
+    }
+
+    function getObjectZ(node) {
+      return Number(node.dataset.z || 2);
+    }
+
+    function setObjectZ(node, value) {
+      const next = Math.max(1, value);
+      node.dataset.z = String(next);
+      node.style.zIndex = next;
+    }
+
+    function alignSelection(direction) {
+      if (!selectedObjects.length) return;
+      const padding = 72;
+      selectedObjects.forEach((node) => {
+        if (direction === "left") {
+          node.style.left = padding + "px";
+        } else if (direction === "center") {
+          node.style.left = ((cert.clientWidth - node.offsetWidth) / 2) + "px";
+        } else if (direction === "right") {
+          node.style.left = (cert.clientWidth - padding - node.offsetWidth) + "px";
+        }
+      });
+      showToast("Selection aligned " + direction);
+    }
+
+    function distributeSelection(axis) {
+      if (selectedObjects.length < 2) return;
+      const ordered = selectedObjects.slice().sort((a, b) => axis === "horizontal"
+        ? parseFloat(a.style.left) - parseFloat(b.style.left)
+        : parseFloat(a.style.top) - parseFloat(b.style.top));
+      const first = ordered[0];
+      const last = ordered[ordered.length - 1];
+      const start = axis === "horizontal" ? parseFloat(first.style.left) : parseFloat(first.style.top);
+      const end = axis === "horizontal" ? parseFloat(last.style.left) : parseFloat(last.style.top);
+      const step = ordered.length > 1 ? (end - start) / (ordered.length - 1) : 0;
+      ordered.forEach((node, index) => {
+        if (axis === "horizontal") {
+          node.style.left = start + step * index + "px";
+        } else {
+          node.style.top = start + step * index + "px";
+        }
+      });
+      showToast("Selection distributed " + axis);
+    }
+
+    function nudgeSelection(dx, dy) {
+      if (!selectedObjects.length) return;
+      selectedObjects.forEach((node) => {
+        node.style.left = parseFloat(node.style.left) + dx + "px";
+        node.style.top = parseFloat(node.style.top) + dy + "px";
+      });
+      renderLayerList();
+    }
+
+    function duplicateSelection() {
+      if (!selectedObjects.length) return;
+      const clones = selectedObjects.map((node) => {
+        const clone = node.cloneNode(true);
+        clone.classList.remove("selected", "multi");
+        clone.style.left = (parseFloat(node.style.left) + 18) + "px";
+        clone.style.top = (parseFloat(node.style.top) + 18) + "px";
+        clone.style.zIndex = String(getObjectZ(node) + 1);
+        clone.dataset.z = clone.style.zIndex;
+        cert.appendChild(clone);
+        registerObject(clone);
+        designObjects.push(clone);
+        return clone;
+      });
+      setSelectionState(clones);
+      showToast(clones.length > 1 ? "Objects duplicated" : "Object duplicated");
+    }
+
+    function deleteSelection() {
+      if (!selectedObjects.length) return;
+      selectedObjects.forEach((node) => {
+        const index = designObjects.indexOf(node);
+        if (index >= 0) designObjects.splice(index, 1);
+        node.remove();
+      });
+      setSelectionState([]);
+      showToast("Selection deleted");
+    }
+
+    function moveSelectionLayer(direction) {
+      if (!selectedObjects.length) return;
+      selectedObjects.forEach((node) => {
+        setObjectZ(node, getObjectZ(node) + direction);
+      });
+      renderLayerList();
+      showToast(direction > 0 ? "Selection brought forward" : "Selection sent backward");
+    }
+
+    function moveSelectionToEdge(direction) {
+      if (!selectedObjects.length) return;
+      const selectedSet = new Set(selectedObjects);
+      const ordered = designObjects.slice().sort((a, b) => getObjectZ(a) - getObjectZ(b));
+      const unselected = ordered.filter((node) => !selectedSet.has(node));
+      const nextOrder = direction > 0
+        ? [...unselected, ...selectedObjects]
+        : [...selectedObjects, ...unselected];
+      nextOrder.forEach((node, index) => {
+        setObjectZ(node, index + 1);
+      });
+      renderLayerList();
+      showToast(direction > 0 ? "Selection moved to front" : "Selection sent to back");
+    }
+
+    function updateZoom() {
+      zoomTop.textContent = zoom + "%";
+      zoomBottom.textContent = zoom + "%";
+      rulerFrame.style.transform = "scale(" + zoom / 100 + ")";
+    }
+
+    function hsvToRgb(h, s, v) {
+      const c = v * s;
+      const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+      const m = v - c;
+      let r = 0, g = 0, b = 0;
+      if (h >= 0 && h < 60) [r, g, b] = [c, x, 0];
+      else if (h < 120) [r, g, b] = [x, c, 0];
+      else if (h < 180) [r, g, b] = [0, c, x];
+      else if (h < 240) [r, g, b] = [0, x, c];
+      else if (h < 300) [r, g, b] = [x, 0, c];
+      else [r, g, b] = [c, 0, x];
+      return {
+        r: Math.round((r + m) * 255),
+        g: Math.round((g + m) * 255),
+        b: Math.round((b + m) * 255)
+      };
+    }
+
+    function rgbToHex(r, g, b) {
+      return "#" + [r, g, b].map((value) => value.toString(16).padStart(2, "0")).join("").toUpperCase();
+    }
+
+    function hexToRgb(hex) {
+      const clean = hex.replace("#", "").trim();
+      if (clean.length !== 6) return { r: 238, g: 251, b: 255 };
+      return {
+        r: parseInt(clean.slice(0, 2), 16),
+        g: parseInt(clean.slice(2, 4), 16),
+        b: parseInt(clean.slice(4, 6), 16)
+      };
+    }
+
+    function rgbToHsv(r, g, b) {
+      const rn = r / 255;
+      const gn = g / 255;
+      const bn = b / 255;
+      const max = Math.max(rn, gn, bn);
+      const min = Math.min(rn, gn, bn);
+      const d = max - min;
+      let h = 0;
+      if (d) {
+        if (max === rn) h = ((gn - bn) / d) % 6;
+        else if (max === gn) h = (bn - rn) / d + 2;
+        else h = (rn - gn) / d + 4;
+      }
+      h = Math.round(h * 60);
+      if (h < 0) h += 360;
+      const s = max === 0 ? 0 : d / max;
+      const v = max;
+      return { h, s, v };
+    }
+
+    function updateShapeFill(node, color) {
+      node.dataset.color = color;
+      const grass = node.querySelector(".grass");
+      if (grass) {
+        grass.style.background = color;
+      } else {
+        node.style.background = color;
+      }
+    }
+
+    function resolveColorRole(role) {
+      if (role) return role;
+      if (!activeColorTarget) return "page";
+      if (activeColorTarget.id === "pageColorTrigger") return "page";
+      if (activeColorTarget.id === "textColorTrigger") return "text";
+      if (activeColorTarget.id === "shapeColorTrigger") return "shape";
+      return "page";
+    }
+
+    function applyColor(hex, backgroundValue, role) {
+      const color = hex.toUpperCase();
+      pickerHex.value = color;
+      const resolvedRole = resolveColorRole(role);
+
+      if (resolvedRole === "page") {
+        cert.style.background = backgroundValue || color;
+        pageColorTrigger.dataset.color = color;
+        pageColorTrigger.style.background = color;
+        pageColorValue.value = color;
+      } else if (resolvedRole === "text") {
+        selectedObjects.filter((node) => node.dataset.objectType === "text").forEach((node) => {
+          node.style.color = color;
+          node.dataset.color = color;
+        });
+        textColorTrigger.dataset.color = color;
+        textColorTrigger.style.background = color;
+        textColorValue.value = color;
+      } else if (resolvedRole === "shape") {
+        selectedObjects.filter((node) => node.dataset.objectType === "shape").forEach((node) => {
+          updateShapeFill(node, color);
+        });
+        shapeColorTrigger.dataset.color = color;
+        shapeColorTrigger.style.background = color;
+        shapeColorValue.value = color;
+      }
+    }
+
+    function renderPicker() {
+      const rgb = hsvToRgb(pickerState.h, 1, 1);
+      pickerSv.style.background = "rgb(" + rgb.r + "," + rgb.g + "," + rgb.b + ")";
+      pickerHandle.style.left = pickerState.s * 100 + "%";
+      pickerHandle.style.top = (1 - pickerState.v) * 100 + "%";
+      hueRange.value = pickerState.h;
+      alphaRange.value = Math.round(pickerState.a * 100);
+      pickerAlphaValue.textContent = Math.round(pickerState.a * 100) + "%";
+      const result = hsvToRgb(pickerState.h, pickerState.s, pickerState.v);
+      const hex = rgbToHex(result.r, result.g, result.b);
+      pickerHex.value = hex;
+      if (activeColorTarget) {
+        applyColor(hex, undefined, resolveColorRole());
+      }
+    }
+
+    function openColorPicker(trigger) {
+      activeColorTarget = trigger;
+      const rgb = hexToRgb(trigger.dataset.color || "#EEFBFF");
+      const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+      pickerState = { h: hsv.h, s: hsv.s, v: hsv.v, a: 1 };
+      renderPicker();
+      const rect = trigger.getBoundingClientRect();
+      const left = Math.min(window.innerWidth - 348, rect.left);
+      const top = Math.min(window.innerHeight - 480, rect.bottom + 10);
+      colorPopover.style.left = Math.max(12, left) + "px";
+      colorPopover.style.top = Math.max(12, top) + "px";
+      colorPopover.classList.add("show");
+    }
+
+    function updateSvFromPointer(event) {
+      const rect = pickerSv.getBoundingClientRect();
+      pickerState.s = clamp((event.clientX - rect.left) / rect.width, 0, 1);
+      pickerState.v = 1 - clamp((event.clientY - rect.top) / rect.height, 0, 1);
+      renderPicker();
+    }
+
+    document.getElementById("sidebarToggle").addEventListener("click", () => {
+      toggleToolPanel();
+    });
+    document.getElementById("sidebarCollapse").addEventListener("click", () => {
+      closeToolPanel();
+    });
+    toolNavButtons.forEach((button) => {
+      button.setAttribute("aria-pressed", button.classList.contains("active") ? "true" : "false");
+      button.addEventListener("click", () => {
+        if (activeTool === button.dataset.tool && !app.classList.contains("toolpanel-closed")) {
+          closeToolPanel();
+          return;
+        }
+        openTool(button.dataset.tool);
+      });
+    });
+    toolpanelBody.addEventListener("scroll", () => {
+      if (activeTool) {
+        toolScrollPositions[activeTool] = toolpanelBody.scrollTop;
+      }
+    });
+    document.getElementById("docName").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        event.target.blur();
+      }
+    });
+    document.getElementById("inspectorClose").addEventListener("click", () => {
+      if (window.innerWidth <= 1080) {
+        app.classList.remove("inspector-open");
+      } else {
+        setSelectionState([]);
+      }
+    });
+
+    document.querySelectorAll("[data-toast]").forEach((button) => {
+      button.addEventListener("click", () => showToast(button.dataset.toast));
+    });
+
+    document.querySelectorAll(".panel-tab").forEach((button) => {
+      button.addEventListener("click", () => {
+        const group = button.closest("[data-tab-group]");
+        if (!group) return;
+        const target = button.dataset.tabTarget;
+        group.querySelectorAll(".panel-tab").forEach((tab) => tab.classList.remove("active"));
+        button.classList.add("active");
+        const scope = group.parentElement;
+        scope.querySelectorAll(".panel-pane").forEach((pane) => {
+          pane.classList.toggle("active", pane.dataset.tabPanel === target);
+        });
+        syncAllAccordionHeights();
+      });
+    });
+
+    document.querySelectorAll(".inspect-head").forEach((button) => {
+      button.setAttribute("aria-expanded", button.parentElement.classList.contains("open") ? "true" : "false");
+      button.addEventListener("click", () => {
+        button.parentElement.classList.toggle("open");
+        button.setAttribute("aria-expanded", button.parentElement.classList.contains("open") ? "true" : "false");
+      });
+    });
+
+    document.querySelectorAll(".template-card").forEach((card) => {
+      card.addEventListener("click", () => {
+        document.querySelectorAll(".template-card").forEach((node) => node.classList.remove("selected"));
+        card.classList.add("selected");
+        showToast("Template applied");
+      });
+    });
+
+    document.querySelectorAll(".theme-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".theme-btn").forEach((node) => node.classList.remove("on"));
+        button.classList.add("on");
+        showToast(button.textContent.trim() + " theme selected");
+      });
+    });
+
+    document.querySelectorAll(".color-trigger").forEach((trigger) => {
+      trigger.addEventListener("click", (event) => {
+        event.stopPropagation();
+        openColorPicker(trigger);
+      });
+    });
+
+    pageColorValue.addEventListener("change", () => {
+      applyColor(normalizeHex(pageColorValue.value, "#EEFBFF"), undefined, "page");
+    });
+    textColorValue.addEventListener("change", () => {
+      applyColor(normalizeHex(textColorValue.value, "#4C3420"), undefined, "text");
+    });
+    shapeColorValue.addEventListener("change", () => {
+      applyColor(normalizeHex(shapeColorValue.value, "#9DD86F"), undefined, "shape");
+    });
+
+    document.querySelectorAll(".picker-swatch").forEach((button) => {
+      button.addEventListener("click", () => {
+        const rgb = hexToRgb(button.dataset.color);
+        const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+        pickerState.h = hsv.h;
+        pickerState.s = hsv.s;
+        pickerState.v = hsv.v;
+        renderPicker();
+      });
+    });
+
+    document.querySelectorAll(".bg-choice").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".bg-choice").forEach((node) => node.classList.remove("selected"));
+        button.classList.add("selected");
+        applyColor(button.dataset.color, button.dataset.bg, "page");
+        showToast(button.querySelector(".asset-info strong").textContent + " applied");
+      });
+    });
+
+    alignLeftBtn.addEventListener("click", () => alignSelection("left"));
+    alignCenterBtn.addEventListener("click", () => alignSelection("center"));
+    alignRightBtn.addEventListener("click", () => alignSelection("right"));
+    distributeHorizontalBtn.addEventListener("click", () => distributeSelection("horizontal"));
+    distributeVerticalBtn.addEventListener("click", () => distributeSelection("vertical"));
+    bringForwardBtn.addEventListener("click", () => moveSelectionLayer(1));
+    sendBackwardBtn.addEventListener("click", () => moveSelectionLayer(-1));
+    bringToFrontBtn.addEventListener("click", () => moveSelectionToEdge(1));
+    sendToBackBtn.addEventListener("click", () => moveSelectionToEdge(-1));
+    duplicateBtn.addEventListener("click", duplicateSelection);
+    deleteBtn.addEventListener("click", deleteSelection);
+    arrangeFrontBtn.addEventListener("click", () => moveSelectionToEdge(1));
+    arrangeBackBtn.addEventListener("click", () => moveSelectionToEdge(-1));
+    duplicateQuickBtn.addEventListener("click", duplicateSelection);
+    rulerToggle.addEventListener("click", () => {
+      app.classList.toggle("rulers-hidden");
+      rulerToggle.classList.toggle("off", app.classList.contains("rulers-hidden"));
+      rulerToggle.setAttribute("aria-pressed", app.classList.contains("rulers-hidden") ? "false" : "true");
+      showToast(app.classList.contains("rulers-hidden") ? "Rulers hidden" : "Rulers shown");
+    });
+    layerList.addEventListener("click", (event) => {
+      const item = event.target.closest(".layer-item");
+      if (!item) return;
+      const match = designObjects.find((node) => node.dataset.objectId === item.dataset.layerId);
+      if (!match) return;
+      setSelectionState([match]);
+    });
+
+    canvasScroll.addEventListener("click", (event) => {
+      if (!event.target.closest(".design-object")) {
+        setSelectionState([]);
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!colorPopover.contains(event.target) && !event.target.closest(".color-trigger")) {
+        colorPopover.classList.remove("show");
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      const tag = event.target.tagName;
+      if (event.target.isContentEditable || tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
+        return;
+      }
+      const mod = event.ctrlKey || event.metaKey;
+      if (mod && event.key.toLowerCase() === "d") {
+        event.preventDefault();
+        duplicateSelection();
+      }
+      if (mod && (event.key === "=" || event.key === "+")) {
+        event.preventDefault();
+        zoom = clamp(zoom + 10, 40, 160);
+        updateZoom();
+      }
+      if (mod && event.key === "-") {
+        event.preventDefault();
+        zoom = clamp(zoom - 10, 40, 160);
+        updateZoom();
+      }
+      if (event.key === "Escape" && selectedObjects.length) {
+        event.preventDefault();
+        setSelectionState([]);
+      }
+      if ((event.key === "Delete" || event.key === "Backspace") && selectedObjects.length) {
+        event.preventDefault();
+        deleteSelection();
+      }
+      if (mod && event.key === "]") {
+        event.preventDefault();
+        if (event.shiftKey) {
+          moveSelectionToEdge(1);
+        } else {
+          moveSelectionLayer(1);
+        }
+      }
+      if (mod && event.key === "[") {
+        event.preventDefault();
+        if (event.shiftKey) {
+          moveSelectionToEdge(-1);
+        } else {
+          moveSelectionLayer(-1);
+        }
+      }
+      const step = event.shiftKey ? 10 : 1;
+      if (event.key === "ArrowLeft" && selectedObjects.length) {
+        event.preventDefault();
+        nudgeSelection(-step, 0);
+      }
+      if (event.key === "ArrowRight" && selectedObjects.length) {
+        event.preventDefault();
+        nudgeSelection(step, 0);
+      }
+      if (event.key === "ArrowUp" && selectedObjects.length) {
+        event.preventDefault();
+        nudgeSelection(0, -step);
+      }
+      if (event.key === "ArrowDown" && selectedObjects.length) {
+        event.preventDefault();
+        nudgeSelection(0, step);
+      }
+    });
+
+    let svDragging = false;
+    pickerSv.addEventListener("pointerdown", (event) => {
+      svDragging = true;
+      updateSvFromPointer(event);
+    });
+    window.addEventListener("pointermove", (event) => {
+      if (svDragging) updateSvFromPointer(event);
+    });
+    window.addEventListener("pointerup", () => {
+      svDragging = false;
+    });
+
+    hueRange.addEventListener("input", () => {
+      pickerState.h = Number(hueRange.value);
+      renderPicker();
+    });
+    alphaRange.addEventListener("input", () => {
+      pickerState.a = Number(alphaRange.value) / 100;
+      pickerAlphaValue.textContent = alphaRange.value + "%";
+    });
+    pickerHex.addEventListener("change", () => {
+      const rgb = hexToRgb(pickerHex.value);
+      const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+      pickerState.h = hsv.h;
+      pickerState.s = hsv.s;
+      pickerState.v = hsv.v;
+      renderPicker();
+    });
+
+    document.getElementById("zoomIn").addEventListener("click", () => {
+      zoom = clamp(zoom + 10, 40, 160);
+      updateZoom();
+    });
+    document.getElementById("zoomOut").addEventListener("click", () => {
+      zoom = clamp(zoom - 10, 40, 160);
+      updateZoom();
+    });
+
+    document.getElementById("btnPreview").addEventListener("click", (event) => runAsyncFeedback(event.currentTarget, "Preview opened"));
+    document.getElementById("btnExport").addEventListener("click", (event) => runAsyncFeedback(event.currentTarget, "Export options opened"));
+    document.getElementById("btnShare").addEventListener("click", (event) => runAsyncFeedback(event.currentTarget, "Share options opened"));
+    document.getElementById("generateTemplateBtn").addEventListener("click", (event) => runAsyncFeedback(event.currentTarget, "Professional template generation started", 900));
+    window.addEventListener("resize", syncAllAccordionHeights);
+
+    designObjects.forEach(registerObject);
+    applyColor("#EEFBFF", "linear-gradient(180deg,#eefbff 0%,#ffffff 58%,#eefae5 100%)", "page");
+    rulerToggle.classList.remove("off");
+    rulerToggle.setAttribute("aria-pressed", "true");
+    openTool("templates", false);
+    updateZoom();
+    setSelectionState([]);
+    syncAllAccordionHeights();
+  </script>
+</body>
+</html>
